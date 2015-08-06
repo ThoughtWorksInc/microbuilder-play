@@ -1,3 +1,4 @@
+import com.thoughtworks.restRpc.core.Parser
 import org.specs2.Specification
 
 class RpcPlaySpec extends Specification {
@@ -12,6 +13,6 @@ class RpcPlaySpec extends Specification {
 
   def e1 = RpcPlay.identity must startWith("the rest-rpc-play depends on")
 
-  def e2 = RpcPlay.identity must endWith(RpcCore.identity)
+  def e2 = RpcPlay.identity must endWith(Parser.identity)
 
 }
