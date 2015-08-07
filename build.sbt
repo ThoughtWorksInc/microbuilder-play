@@ -4,6 +4,8 @@ organization := "com.thoughtworks"
 
 name := "rest-rpc-play"
 
+resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
+
 libraryDependencies += "org.specs2" %% "specs2-core" % "3.6.4" % Test
 
 libraryDependencies += "com.qifun" %% "json-stream" % "0.2.3" % HaxeJava classifier "haxe-java"
