@@ -1,6 +1,7 @@
 package com.thoughtworks.restRpc.play
 
 import com.qifun.jsonStream.rpc.IJsonService
+import com.thoughtworks.restRpc.core.RouteConfiguration
 
 class PlayOutgoingJsonService(s: String, routes: RouteConfiguration) extends IJsonService {
 
