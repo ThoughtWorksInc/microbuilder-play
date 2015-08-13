@@ -12,5 +12,6 @@ class MyResponse {
 @:final
 class MyInnerEntity {
   public function new() {}
-
+  var code: Int;
+  var message: String;
 }
