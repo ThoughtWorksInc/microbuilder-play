@@ -1,18 +1,28 @@
 package com.thoughtworks.restRpc.play
 
+import java.util.concurrent.TimeUnit.SECONDS
+
 import com.github.dreamhead.moco._
-import com.qifun.jsonStream.rpc.IFuture1
+import com.qifun.jsonStream.rpc.{ICompleteHandler1, IFuture1}
 import org.mockito.Mockito
 import org.specs2.Specification
 import org.specs2.mock.{Mockito => SpecMockito}
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{Await, Future, Promise}
 import scala.language.implicitConversions
-import java.util.concurrent.TimeUnit.SECONDS
 
 object Implicits {
-  implicit def jsonStreamFutureToScalaFuture[Value](jsonStreamFuture: IFuture1[Value]):Future[Value] = ???
+  implicit def jsonStreamFutureToScalaFuture[Value](jsonStreamFuture: IFuture1[Value]):Future[Value] = {
+    val p = Promise[Value]()
+
+    jsonStreamFuture.start(new ICompleteHandler1[Value] {
+      override def onSuccess(value: Value): Unit = p success value
+      override def onFailure(ex: scala.Any): Unit = p failure ex.asInstanceOf[Throwable]
+    })
+
+    p.future
+  }
 }
 
 import com.thoughtworks.restRpc.play.Implicits._
