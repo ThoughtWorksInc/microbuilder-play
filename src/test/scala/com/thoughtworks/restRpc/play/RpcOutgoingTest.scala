@@ -17,24 +17,20 @@ class RpcOutgoingTest extends Specification with SpecMockito {def is = s2"""
       This is a specification of using rest-rpc-play tools to make http requests
 
       Should be able to send a get request without parameters     $e1
+      ${step("sequence execution")}
+      Should be able to send a get request by different resource     $e2
                                                                   """
 
   def e1 = {
-    val monitor = Mockito.mock(classOf[MocoMonitor])
+    val theServer: Runner = createMockServer("/my-method/1/name/abc", """
+          {
+            "myInnerEntity": {
+              "code":1,
+              "message":"this is a message"
+            }
+          }""")
 
-    val server: HttpServer = Moco.httpServer(8090, monitor)
-    server.get(Moco.by(Moco.uri("/my-method/1/name/abc"))).response(
-      """
-        {
-          "myInnerEntity": {
-            "code":1,
-            "message":"this is a message"
-          }
-        }
-      """)
 
-    val theServer = Runner.runner(server)
-    theServer.start()
 
     val myRpc:MyRpc = MyOutgoingProxyFactory.outgoingProxy_com_thoughtworks_restRpc_play_MyRpc(
       new PlayOutgoingJsonService("http://localhost:8090", MyUriTemplateProcessor.processor_com_thoughtworks_restRpc_play_MyRpc)
@@ -47,5 +43,39 @@ class RpcOutgoingTest extends Specification with SpecMockito {def is = s2"""
     theServer.stop()
     response.myInnerEntity.code === 1
     response.myInnerEntity.message === "this is a message"
+  }
+
+  def e2 = {
+    val theServer: Runner = createMockServer("/my-method/2/name/def", """
+          {
+            "myInnerEntity": {
+              "code":2,
+              "message":"this is a different message"
+            }
+          }""")
+
+    val myRpc:MyRpc = MyOutgoingProxyFactory.outgoingProxy_com_thoughtworks_restRpc_play_MyRpc(
+      new PlayOutgoingJsonService("http://localhost:8090", MyUriTemplateProcessor.processor_com_thoughtworks_restRpc_play_MyRpc)
+    )
+
+    val scalaResponseFuture:Future[MyResponse] = myRpc.myMethod(2, "def")
+
+
+    val response = Await.result(scalaResponseFuture, Duration(5, SECONDS))
+    theServer.stop()
+    response.myInnerEntity.code === 2
+    response.myInnerEntity.message === "this is a different message"
+  }
+
+  def createMockServer(uri: String, response: String): Runner = {
+    val monitor = Mockito.mock(classOf[MocoMonitor])
+
+    val server: HttpServer = Moco.httpServer(8090, monitor)
+    server.get(Moco.by(Moco.uri(uri))).response(
+      response)
+
+    val theServer = Runner.runner(server)
+    theServer.start()
+    theServer
   }
 }
