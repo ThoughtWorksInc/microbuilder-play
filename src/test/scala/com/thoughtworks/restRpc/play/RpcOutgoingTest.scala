@@ -4,6 +4,7 @@ import java.util.concurrent.TimeUnit.SECONDS
 
 import com.github.dreamhead.moco._
 import com.qifun.jsonStream.rpc.{ICompleteHandler1, IFuture1}
+import com.thoughtworks.restRpc.core.RouteConfiguration
 import org.mockito.Mockito
 import org.specs2.Specification
 import org.specs2.mock.{Mockito => SpecMockito}
@@ -51,8 +52,11 @@ class RpcOutgoingTest extends Specification with SpecMockito {def is = s2"""
     val theServer = Runner.runner(server)
     theServer.start()
 
+    val configuration: RouteConfiguration = new RouteConfiguration()
+    configuration.nameToUriTemplate.set("myMethod", new FakeUriTemplate)
+
     val myRpc:MyRpc = MyOutgoingProxyFactory.outgoingProxy_com_thoughtworks_restRpc_play_MyRpc(
-      new PlayOutgoingJsonService("http://localhost:8080/", MyUriTemplateProcessor.processor_com_thoughtworks_restRpc_play_MyRpc)
+      new PlayOutgoingJsonService("http://localhost:8080/", configuration)
     )
 
     val scalaResponseFuture:Future[MyResponse] = myRpc.myMethod(1, "abc")

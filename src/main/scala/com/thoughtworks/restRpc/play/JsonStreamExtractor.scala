@@ -55,4 +55,28 @@ private[play] object JsonStreamExtractor {
     }
 
   }
+
+  object Int {
+
+    final def unapply(jsonStream: JsonStream): Option[Int] = {
+      haxe.root.Type.enumIndex(jsonStream) match {
+        case JsonStreamObjectIndex => {
+          Some(haxe.root.Type.enumParameters(jsonStream).__a(0).asInstanceOf[Int])
+        }
+        case _ => None
+      }
+    }
+  }
+
+  object String {
+
+    final def unapply(jsonStream: JsonStream): Option[String] = {
+      haxe.root.Type.enumIndex(jsonStream) match {
+        case JsonStreamObjectIndex => {
+          Some(haxe.root.Type.enumParameters(jsonStream).__a(0).asInstanceOf[String])
+        }
+        case _ => None
+      }
+    }
+  }
 }
