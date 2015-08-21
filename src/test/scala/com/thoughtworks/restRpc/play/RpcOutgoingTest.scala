@@ -3,7 +3,7 @@ package com.thoughtworks.restRpc.play
 import java.util.concurrent.TimeUnit.SECONDS
 
 import com.github.dreamhead.moco._
-import com.thoughtworks.restRpc.play.Implicits._
+import com.thoughtworks.restRpc.core.{RouteConfiguration, UriTemplate}
 import org.mockito.Mockito
 import org.specs2.Specification
 import org.specs2.mock.{Mockito => SpecMockito}
@@ -11,8 +11,10 @@ import org.specs2.mock.{Mockito => SpecMockito}
 import scala.concurrent._
 import scala.concurrent.duration._
 import scala.language.implicitConversions
+import com.thoughtworks.restRpc.play.Implicits.jsonStreamFutureToScalaFuture
 
-class RpcOutgoingTest extends Specification with SpecMockito {def is = s2"""
+class RpcOutgoingTest extends Specification with SpecMockito {
+  def is = s2"""
 
       This is a specification of using rest-rpc-play tools to make http requests
 
@@ -32,11 +34,11 @@ class RpcOutgoingTest extends Specification with SpecMockito {def is = s2"""
 
 
 
-    val myRpc:MyRpc = MyOutgoingProxyFactory.outgoingProxy_com_thoughtworks_restRpc_play_MyRpc(
-      new PlayOutgoingJsonService("http://localhost:8090", MyUriTemplateProcessor.processor_com_thoughtworks_restRpc_play_MyRpc)
+    val myRpc: MyRpc = MyOutgoingProxyFactory.outgoingProxy_com_thoughtworks_restRpc_play_MyRpc(
+      new PlayOutgoingJsonService("http://localhost:8090", configuration)
     )
 
-    val scalaResponseFuture:Future[MyResponse] = myRpc.myMethod(1, "abc")
+    val scalaResponseFuture: Future[MyResponse] = myRpc.myMethod(1, "abc")
 
 
     val response = Await.result(scalaResponseFuture, Duration(5, SECONDS))
@@ -54,11 +56,11 @@ class RpcOutgoingTest extends Specification with SpecMockito {def is = s2"""
             }
           }""")
 
-    val myRpc:MyRpc = MyOutgoingProxyFactory.outgoingProxy_com_thoughtworks_restRpc_play_MyRpc(
-      new PlayOutgoingJsonService("http://localhost:8090", MyUriTemplateProcessor.processor_com_thoughtworks_restRpc_play_MyRpc)
+    val myRpc: MyRpc = MyOutgoingProxyFactory.outgoingProxy_com_thoughtworks_restRpc_play_MyRpc(
+      new PlayOutgoingJsonService("http://localhost:8090", configuration)
     )
 
-    val scalaResponseFuture:Future[MyResponse] = myRpc.myMethod(2, "def")
+    val scalaResponseFuture: Future[MyResponse] = myRpc.myMethod(2, "def")
 
 
     val response = Await.result(scalaResponseFuture, Duration(5, SECONDS))
@@ -78,4 +80,49 @@ class RpcOutgoingTest extends Specification with SpecMockito {def is = s2"""
     theServer.start()
     theServer
   }
+
+  def configuration: RouteConfiguration = {
+    new RouteConfiguration() {
+      override def nameToUriTemplate(name: String): UriTemplate = {
+        new UriTemplate {
+          val metaData = Map("myMethod" -> "my-method")
+
+          override def render(context: scala.Any): String = generateURL(context)
+
+          //By JsonStreamExtractor
+          def generateURL(request: scala.Any): String = {
+            request match {
+              case JsonStreamExtractor.Object(pairs) => {
+                pairs.map {
+                  a =>
+                    s"${metaData.getOrElse(a.key, "error")}" + fillInParams(a.value, "/%s/name/%s")
+                }.mkString
+              }
+              case _ => ""
+            }
+          }
+
+          def fillInParams(params: com.qifun.jsonStream.JsonStream, urlWithPlaceHolder: String): String = {
+            params match {
+              case JsonStreamExtractor.Array(elements) => {
+                val params = elements.toStream.map {
+                  case JsonStreamExtractor.Integer(number) =>
+                    number.toString
+                  case JsonStreamExtractor.String(json) =>
+                    json
+                  case _ => ""
+                }
+                urlWithPlaceHolder.format(params: _*)
+              }
+              case _ => ""
+            }
+
+          }
+
+          override def method(): String = "GET"
+        }
+      }
+    }
+  }
+
 }
