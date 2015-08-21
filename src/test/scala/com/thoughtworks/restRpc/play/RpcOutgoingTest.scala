@@ -85,23 +85,10 @@ class RpcOutgoingTest extends Specification with SpecMockito {
     new RouteConfiguration() {
       override def nameToUriTemplate(name: String): UriTemplate = {
         new UriTemplate {
-          val metaData = Map("myMethod" -> "my-method")
-
-          override def render(context: scala.Any): String = generateURL(context)
+          override def render(context: scala.Any): String =
+            fillInParams(context.asInstanceOf[com.qifun.jsonStream.JsonStream], "my-method/%s/name/%s")
 
           //By JsonStreamExtractor
-          def generateURL(request: scala.Any): String = {
-            request match {
-              case JsonStreamExtractor.Object(pairs) => {
-                pairs.map {
-                  a =>
-                    s"${metaData.getOrElse(a.key, "error")}" + fillInParams(a.value, "/%s/name/%s")
-                }.mkString
-              }
-              case _ => ""
-            }
-          }
-
           def fillInParams(params: com.qifun.jsonStream.JsonStream, urlWithPlaceHolder: String): String = {
             params match {
               case JsonStreamExtractor.Array(elements) => {

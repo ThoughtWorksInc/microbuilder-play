@@ -1,6 +1,6 @@
 package com.thoughtworks.restRpc.play
 
-import com.qifun.jsonStream.JsonStream
+import com.qifun.jsonStream.{JsonStreamPair, JsonStream}
 import com.qifun.jsonStream.io.{PrettyTextPrinter, TextParser}
 import com.qifun.jsonStream.rpc.{ICompleteHandler1, IFuture1, IJsonService}
 import com.thoughtworks.restRpc.core.{UriTemplate, RouteConfiguration}
@@ -32,21 +32,25 @@ class PlayOutgoingJsonService(host: String, routes: RouteConfiguration) extends 
   def apply(request: com.qifun.jsonStream.JsonStream, responseHandler: com.qifun.jsonStream.rpc.IJsonResponseHandler): Unit = {
     clientRunning {
       client =>
-        val template: UriTemplate = routes.nameToUriTemplate("")
-        val uri: String = template.render(request)
-        client.url(s"${host}/${uri}").get() map {
-          res => responseHandler.onSuccess(TextParser.parseString(res.json.toString()))
-        }
-
+        extractRoute(request) map {
+          case r =>
+            val template: UriTemplate = routes.nameToUriTemplate(r.name)
+            val uri: String = template.render(r.parameters)
+            client.url(s"$host/$uri").get() map {
+              res => responseHandler.onSuccess(TextParser.parseString(res.json.toString()))
+            }
+        } getOrElse Future{}
     }
   }
 
-  def extractRouteName(request: JsonStream): String = request match {
-      case JsonStreamExtractor.Object(pairs) => {
-        pairs.map(_.key).mkString
-      }
-      case _ => ""
-    }
+  case class RouteInfo(name: String, parameters: JsonStream)
+
+  def extractRoute(request: JsonStream): Option[RouteInfo] = request match {
+    case JsonStreamExtractor.Object(pairs) =>
+      val next: JsonStreamPair = pairs.next()
+      Some(RouteInfo(next.key, next.value))
+    case _ => None
+  }
 
   def clientRunning(callback: ((play.api.libs.ws.ning.NingWSClient) => Future[Unit])) = {
     val builder = new com.ning.http.client.AsyncHttpClientConfig.Builder()
