@@ -22,7 +22,8 @@ libraryDependencies += "org.specs2" %% "specs2-mock" % "3.6.4"
 
 libraryDependencies += "org.mockito" % "mockito-all" % "1.10.19"
 
-libraryDependencies += "com.github.dreamhead" % "moco-core" % "0.10.1"
+libraryDependencies += "com.github.dreamhead" % "moco-core" % "0.10.1" % Test
+libraryDependencies += "com.typesafe.play" % "play-ws_2.10" % "2.3.6"
 
 haxeOptions in Test ++= Seq("-lib", "continuation")
 
