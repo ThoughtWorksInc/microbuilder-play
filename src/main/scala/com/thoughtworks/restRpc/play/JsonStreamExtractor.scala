@@ -30,12 +30,20 @@ private[play] object JsonStreamExtractor {
     haxe.root.Type.getEnumConstructs(classOf[JsonStream]).indexOf("ARRAY", 0)
   }
 
+  private val JsonStreamStringIndex = {
+    haxe.root.Type.getEnumConstructs(classOf[JsonStream]).indexOf("STRING", 0)
+  }
+
+  private val JsonStreamInt32Index = {
+    haxe.root.Type.getEnumConstructs(classOf[JsonStream]).indexOf("INT32", 0)
+  }
+
   object Array {
 
     final def unapply(jsonStream: JsonStream): Option[WrappedHaxeIterator[JsonStream]] = {
       haxe.root.Type.enumIndex(jsonStream) match {
         case JsonStreamArrayIndex => {
-          Some(WrappedHaxeIterator(haxe.root.Type.enumParameters(0)).asInstanceOf[WrappedHaxeIterator[JsonStream]])
+          Some(WrappedHaxeIterator(haxe.root.Type.enumParameters(jsonStream).__a(0)).asInstanceOf[WrappedHaxeIterator[JsonStream]])
         }
         case _ => None
       }
@@ -49,6 +57,31 @@ private[play] object JsonStreamExtractor {
       haxe.root.Type.enumIndex(jsonStream) match {
         case JsonStreamObjectIndex => {
           Some(WrappedHaxeIterator(haxe.root.Type.enumParameters(jsonStream).__a(0)).asInstanceOf[WrappedHaxeIterator[JsonStreamPair]])
+        }
+        case _ => None
+      }
+    }
+
+  }
+
+  object String {
+
+    final def unapply(jsonStream: JsonStream): Option[String] = {
+      haxe.root.Type.enumIndex(jsonStream) match {
+        case JsonStreamStringIndex => {
+          Some(haxe.root.Type.enumParameters(jsonStream).__a(0).toString)
+        }
+        case _ => None
+      }
+    }
+
+  }
+  object Integer {
+
+    final def unapply(jsonStream: JsonStream): Option[Integer] = {
+      haxe.root.Type.enumIndex(jsonStream) match {
+        case JsonStreamInt32Index => {
+          Some(haxe.root.Type.enumParameters(jsonStream).__a(0).asInstanceOf[Integer])
         }
         case _ => None
       }
