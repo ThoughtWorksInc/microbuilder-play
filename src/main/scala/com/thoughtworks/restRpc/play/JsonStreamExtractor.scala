@@ -30,12 +30,24 @@ private[play] object JsonStreamExtractor {
     haxe.root.Type.getEnumConstructs(classOf[JsonStream]).indexOf("ARRAY", 0)
   }
 
+  private val JsonStreamStringIndex = {
+    haxe.root.Type.getEnumConstructs(classOf[JsonStream]).indexOf("STRING", 0)
+  }
+
+  private val JsonStreamInt32Index = {
+    haxe.root.Type.getEnumConstructs(classOf[JsonStream]).indexOf("INT32", 0)
+  }
+
+  private val JsonStreamNumberIndex = {
+    haxe.root.Type.getEnumConstructs(classOf[JsonStream]).indexOf("NUMBER", 0)
+  }
+
   object Array {
 
     final def unapply(jsonStream: JsonStream): Option[WrappedHaxeIterator[JsonStream]] = {
       haxe.root.Type.enumIndex(jsonStream) match {
         case JsonStreamArrayIndex => {
-          Some(WrappedHaxeIterator(haxe.root.Type.enumParameters(0)).asInstanceOf[WrappedHaxeIterator[JsonStream]])
+          Some(WrappedHaxeIterator(haxe.root.Type.enumParameters(jsonStream).__a(0)).asInstanceOf[WrappedHaxeIterator[JsonStream]])
         }
         case _ => None
       }
@@ -56,11 +68,23 @@ private[play] object JsonStreamExtractor {
 
   }
 
-  object Int {
+  object Number {
 
-    final def unapply(jsonStream: JsonStream): Option[Int] = {
+    final def unapply(jsonStream: JsonStream): Option[Double] = {
       haxe.root.Type.enumIndex(jsonStream) match {
-        case JsonStreamObjectIndex => {
+        case JsonStreamNumberIndex => {
+          Some(haxe.root.Type.enumParameters(jsonStream).__a(0).asInstanceOf[Double])
+        }
+        case _ => None
+      }
+    }
+  }
+
+  object Int32 {
+
+    final def unapply(jsonStream: JsonStream): Option[Double] = {
+      haxe.root.Type.enumIndex(jsonStream) match {
+        case JsonStreamInt32Index => {
           Some(haxe.root.Type.enumParameters(jsonStream).__a(0).asInstanceOf[Int])
         }
         case _ => None
@@ -72,7 +96,7 @@ private[play] object JsonStreamExtractor {
 
     final def unapply(jsonStream: JsonStream): Option[String] = {
       haxe.root.Type.enumIndex(jsonStream) match {
-        case JsonStreamObjectIndex => {
+        case JsonStreamStringIndex => {
           Some(haxe.root.Type.enumParameters(jsonStream).__a(0).asInstanceOf[String])
         }
         case _ => None
