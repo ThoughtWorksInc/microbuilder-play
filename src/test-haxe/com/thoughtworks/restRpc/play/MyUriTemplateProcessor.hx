@@ -10,5 +10,5 @@ using com.thoughtworks.restRpc.play.MyDeserializer;
 //]))
 class MyUriTemplateProcessor {
 
-    static var processor_com_thoughtworks_restRpc_play_MyRpc:RouteConfiguration;
+    static var processor_com_thoughtworks_restRpc_play_MyRpc:IRouteConfiguration;
 }

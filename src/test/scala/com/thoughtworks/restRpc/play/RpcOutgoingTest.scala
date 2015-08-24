@@ -3,10 +3,10 @@ package com.thoughtworks.restRpc.play
 import java.util.concurrent.TimeUnit.SECONDS
 
 import com.qifun.jsonStream.rpc.{ICompleteHandler1, IFuture1}
-import com.thoughtworks.restRpc.core.RouteConfiguration
+import com.thoughtworks.restRpc.core.IRouteConfiguration
 import mockws.MockWS
 import org.specs2.Specification
-import org.specs2.mock.{Mockito => SpecMockito}
+import org.specs2.mock.Mockito
 import play.api.libs.ws.WSAPI
 import play.api.mvc.Action
 import play.api.mvc.Results.Ok
@@ -34,7 +34,7 @@ object Implicits {
 
 import com.thoughtworks.restRpc.play.Implicits._
 
-class RpcOutgoingTest extends Specification with SpecMockito {
+class RpcOutgoingTest extends Specification with Mockito {
   def is = s2"""
 
       This is a specification of using rest-rpc-play tools to make http requests
@@ -60,8 +60,8 @@ class RpcOutgoingTest extends Specification with SpecMockito {
     override def url(url: String) = ws.url(url)
     override def client = ws
   }
-  val configuration: RouteConfiguration = new RouteConfiguration()
-  configuration.nameToUriTemplate.set("myMethod", new FakeUriTemplate)
+  val configuration: IRouteConfiguration = mock[IRouteConfiguration]
+  configuration.nameToUriTemplate("myMethod") returns new FakeUriTemplate
 
   val myRpc: MyRpc = MyOutgoingProxyFactory.outgoingProxy_com_thoughtworks_restRpc_play_MyRpc(
     new PlayOutgoingJsonService("http://localhost:8080", configuration, mockWsApi)
