@@ -5,8 +5,8 @@ import java.util.concurrent.TimeUnit.SECONDS
 import com.qifun.jsonStream.rpc.{ICompleteHandler1, IFuture1}
 import com.thoughtworks.restRpc.core.IRouteConfiguration
 import mockws.MockWS
-import org.specs2.Specification
 import org.specs2.mock.Mockito
+import org.specs2.mutable.Specification
 import play.api.libs.ws.WSAPI
 import play.api.mvc.Action
 import play.api.mvc.Results.Ok
@@ -35,14 +35,6 @@ object Implicits {
 import com.thoughtworks.restRpc.play.Implicits._
 
 class RpcOutgoingTest extends Specification with Mockito {
-  def is = s2"""
-
-      This is a specification of using rest-rpc-play tools to make http requests
-
-      code should equals to 1                      $e1
-      message should equals to "this is a message" $e2
-                                                                  """
-
   val ws: MockWS = MockWS {
     case (GET, "http://localhost:8080/my-method/1.0/name/abc") => Action {
       Ok("""
@@ -60,17 +52,21 @@ class RpcOutgoingTest extends Specification with Mockito {
     override def url(url: String) = ws.url(url)
     override def client = ws
   }
-  val configuration: IRouteConfiguration = mock[IRouteConfiguration]
-  configuration.nameToUriTemplate("myMethod") returns new FakeUriTemplate
 
-  val myRpc: MyRpc = MyOutgoingProxyFactory.outgoingProxy_com_thoughtworks_restRpc_play_MyRpc(
-    new PlayOutgoingJsonService("http://localhost:8080", configuration, mockWsApi)
-  )
+  "This is a specification of using rest-rpc-play tools to make http requests".txt
 
-  val scalaResponseFuture: Future[MyResponse] = myRpc.myMethod(1, "abc")
+  "Should convert myMethod to http get request and get the response" >> {
+    val configuration: IRouteConfiguration = mock[IRouteConfiguration]
+    configuration.nameToUriTemplate("myMethod") returns new FakeUriTemplate
 
-  val response = Await.result(scalaResponseFuture, Duration(100, SECONDS))
+    val myRpc: MyRpc = MyOutgoingProxyFactory.outgoingProxy_com_thoughtworks_restRpc_play_MyRpc(
+      new PlayOutgoingJsonService("http://localhost:8080", configuration, mockWsApi)
+    )
 
-  def e1 = response.myInnerEntity.message === "this is a message"
-  def e2 = response.myInnerEntity.code === 1
+    val response = Await.result(myRpc.myMethod(1, "abc"), Duration(100, SECONDS))
+
+    response.myInnerEntity.message === "this is a message"
+    response.myInnerEntity.code === 1
+  }
+
 }

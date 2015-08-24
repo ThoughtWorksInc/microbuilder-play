@@ -3,11 +3,10 @@ package com.thoughtworks.restRpc.play
 import com.qifun.jsonStream.JsonStream
 import com.qifun.jsonStream.io.TextParser
 import com.qifun.jsonStream.rpc.IJsonService
-import com.thoughtworks.restRpc.core.{IUriTemplate, IRouteConfiguration}
+import com.thoughtworks.restRpc.core.{IRouteConfiguration, IUriTemplate}
 import play.api.libs.ws.WSAPI
-
 import scala.concurrent.ExecutionContext
-import scala.util.{Success, Failure}
+import scala.util.{Failure, Success}
 
 class PlayOutgoingJsonService(urlPrefix: String, routes: IRouteConfiguration, wsAPI: WSAPI)(implicit executionContext: ExecutionContext) extends IJsonService {
 
