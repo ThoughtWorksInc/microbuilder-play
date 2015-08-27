@@ -15,3 +15,14 @@ class MyInnerEntity {
   var code: Int;
   var message: String;
 }
+
+@:nativeGen
+@:final
+class Book {
+    public function new(id:Int, name:String) {
+        this.id = id;
+        this.name = name;
+    }
+    public var id: Int;
+    public var name: String;
+}
