@@ -4,13 +4,28 @@ import java.io.ByteArrayOutputStream
 
 import com.qifun.jsonStream.JsonStream
 import com.qifun.jsonStream.io.{PrettyTextPrinter, TextParser}
-import com.qifun.jsonStream.rpc.IJsonService
+import com.qifun.jsonStream.rpc.{ICompleteHandler1, IFuture1, IJsonService}
 import com.thoughtworks.restRpc.core.{IRouteConfiguration, IUriTemplate}
 import play.api.http.Writeable
 import play.api.libs.ws.WSAPI
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{Promise, Future, ExecutionContext}
 import scala.util.{Failure, Success}
+
+object Implicits {
+
+  implicit def jsonStreamFutureToScalaFuture[Value](jsonStreamFuture: IFuture1[Value]):Future[Value] = {
+    val p = Promise[Value]()
+
+    jsonStreamFuture.start(new ICompleteHandler1[Value] {
+      override def onSuccess(value: Value): Unit = p success value
+
+      override def onFailure(ex: scala.Any): Unit = p failure ex.asInstanceOf[Throwable]
+    })
+
+    p.future
+  }
+}
 
 class PlayOutgoingJsonService(urlPrefix: String, routes: IRouteConfiguration, wsAPI: WSAPI)(implicit executionContext: ExecutionContext) extends IJsonService {
 

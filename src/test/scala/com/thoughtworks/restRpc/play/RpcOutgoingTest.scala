@@ -4,34 +4,17 @@ import java.util.concurrent.TimeUnit.SECONDS
 
 import com.github.dreamhead.moco.{Moco, _}
 import com.ning.http.client.AsyncHttpClientConfig
-import com.qifun.jsonStream.rpc.{ICompleteHandler1, IFuture1}
 import com.thoughtworks.restRpc.core.{IRouteConfiguration, IUriTemplate}
+import com.thoughtworks.restRpc.play.Implicits._
 import org.specs2.mock.{Mockito => SpecMockito}
 import org.specs2.mutable.Specification
+import play.api.libs.ws._
+import play.api.libs.ws.ning._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import scala.concurrent.duration.Duration
 import scala.language.implicitConversions
-import play.api.libs.ws._
-import play.api.libs.ws.ning._
-
-object Implicits {
-
-  implicit def jsonStreamFutureToScalaFuture[Value](jsonStreamFuture: IFuture1[Value]):Future[Value] = {
-    val p = Promise[Value]()
-
-    jsonStreamFuture.start(new ICompleteHandler1[Value] {
-      override def onSuccess(value: Value): Unit = p success value
-
-      override def onFailure(ex: scala.Any): Unit = p failure ex.asInstanceOf[Throwable]
-    })
-
-    p.future
-  }
-}
-
-import com.thoughtworks.restRpc.play.Implicits._
 
 class RpcOutgoingTest extends Specification with SpecMockito {
   val ws:WSClient = new NingWSClient(new AsyncHttpClientConfig.Builder().build())
