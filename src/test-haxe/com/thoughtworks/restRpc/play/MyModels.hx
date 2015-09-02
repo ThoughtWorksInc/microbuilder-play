@@ -26,3 +26,10 @@ class Book {
     public var id: Int;
     public var name: String;
 }
+
+@:nativeGen
+@:final
+class CreatedResponse {
+    public function new() {}
+    var result:String;
+}
