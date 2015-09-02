@@ -8,6 +8,7 @@ import com.thoughtworks.restRpc.core.{IRouteConfiguration, IUriTemplate}
 import com.thoughtworks.restRpc.play.Implicits._
 import org.specs2.mock.{Mockito => SpecMockito}
 import org.specs2.mutable.Specification
+import org.specs2.specification.{AfterAll, BeforeAll}
 import play.api.libs.ws._
 import play.api.libs.ws.ning._
 
@@ -16,7 +17,7 @@ import scala.concurrent._
 import scala.concurrent.duration.Duration
 import scala.language.implicitConversions
 
-class RpcOutgoingTest extends Specification with SpecMockito {
+class RpcOutgoingTest extends Specification with SpecMockito with BeforeAll with AfterAll {
   val ws:WSClient = new NingWSClient(new AsyncHttpClientConfig.Builder().build())
 
   val mockWsApi = new WSAPI {
@@ -24,21 +25,11 @@ class RpcOutgoingTest extends Specification with SpecMockito {
     override def client = ws
   }
 
+  var theServer: Runner = null
+
   "This is a specification of using rest-rpc-play tools to make http requests".txt
 
   "Should convert myMethod to http get request and get the response" >> {
-    val server: HttpServer = Moco.httpServer(8090)
-    server.get(Moco.by(Moco.uri("/my-method/1.0/name/abc"))).response("""
-          {
-            "myInnerEntity": {
-              "code":1,
-              "message":"this is a message"
-            }
-          }""")
-
-    val theServer = Runner.runner(server)
-    theServer.start()
-
     val configuration: IRouteConfiguration = mock[IRouteConfiguration]
     val template: IUriTemplate = new FakeUriTemplate("GET", "/my-method/1.0/name/abc", 2)
     configuration.nameToUriTemplate("myMethod") returns template
@@ -49,34 +40,46 @@ class RpcOutgoingTest extends Specification with SpecMockito {
 
     val response = Await.result(myRpc.myMethod(1, "abc"), Duration(5, SECONDS))
 
-    theServer.stop()
-    ws.close()
-
     response.myInnerEntity.message === "this is a message"
     response.myInnerEntity.code === 1
   }
 
-//  "Should convert createResource to http post request and get created response" >> {
-//    val server: HttpServer = Moco.httpServer(8080)
-//    server.post(Moco.by(Moco.uri("/books"))).response("created")
-//
-//    val theServer = Runner.runner(server)
-//    theServer.start()
-//
-//    val configuration: IRouteConfiguration = mock[IRouteConfiguration]
-//
-//    val template: IUriTemplate = new FakeUriTemplate("POST", "/books", 1)
-//    configuration.nameToUriTemplate("createResource") returns template
-//
-//    val myRpc: MyRpc = MyOutgoingProxyFactory.outgoingProxy_com_thoughtworks_restRpc_play_MyRpc(
-//      new PlayOutgoingJsonService("http://localhost:8080", configuration, mockWsApi)
-//    )
-//
-//    val response = Await.result(myRpc.createResource("books", new Book(1, "name")), Duration(5, SECONDS))
-//
-//    theServer.stop()
-//    ws.close()
-//
-//    response === "created"
-//  }
+  "Should convert createResource to http post request and get created response" >> {
+    val configuration: IRouteConfiguration = mock[IRouteConfiguration]
+
+    val template: IUriTemplate = new FakeUriTemplate("POST", "/books", 1)
+    configuration.nameToUriTemplate("createResource") returns template
+
+    val myRpc: MyRpc = MyOutgoingProxyFactory.outgoingProxy_com_thoughtworks_restRpc_play_MyRpc(
+      new PlayOutgoingJsonService("http://localhost:8090", configuration, mockWsApi)
+    )
+
+    val response = Await.result(myRpc.createResource("books", new Book(1, "name")), Duration(5, SECONDS))
+
+    response.result === "created"
+  }
+
+  def beforeAll() {
+    val server = Moco.httpServer(8090)
+    server.get(Moco.by(Moco.uri("/my-method/1.0/name/abc"))).response("""
+          {
+            "myInnerEntity": {
+              "code":1,
+              "message":"this is a message"
+            }
+          }""")
+
+    server.post(Moco.by(Moco.uri("/books"))).response(
+      """
+        {"result":"created"}
+      """)
+
+    theServer = Runner.runner(server)
+    theServer.start()
+  }
+
+  override def afterAll()  = {
+    theServer.stop()
+    ws.close()
+  }
 }
