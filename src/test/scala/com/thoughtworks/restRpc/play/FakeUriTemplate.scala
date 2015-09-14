@@ -1,5 +1,6 @@
 package com.thoughtworks.restRpc.play
 
+import com.qifun.jsonStream.JsonStream
 import com.thoughtworks.restRpc.core.IUriTemplate
 import haxe.root.Reflect
 
@@ -11,4 +12,8 @@ class FakeUriTemplate(methodName: String, resultUrl: String, numOfUrlParams:Int)
     }
     resultUrl
   }
+
+  override def parseUri(uri: String): Array[JsonStream] = throw new Exception("didn't implemented")
+
+  override def get_requestContentType(): String = throw new Exception("didn't implemented")
 }
