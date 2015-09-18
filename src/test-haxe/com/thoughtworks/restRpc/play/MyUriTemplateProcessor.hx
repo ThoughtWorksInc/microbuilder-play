@@ -1,6 +1,6 @@
 package com.thoughtworks.restRpc.play;
 
-import com.thoughtworks.restRpc.core.RouteConfiguration;
+import com.thoughtworks.restRpc.core.IRouteConfiguration;
 using com.qifun.jsonStream.Plugins;
 using com.thoughtworks.restRpc.play.MyDeserializer;
 

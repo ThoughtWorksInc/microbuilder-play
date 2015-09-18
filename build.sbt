@@ -47,3 +47,11 @@ compileOrder := CompileOrder.JavaThenScala
 for (c <- Seq(Compile, Test)) yield {
   haxeOptions in c ++= Seq("-dce", "no")
 }
+
+for (c <- AllTestTargetConfigurations) yield {
+  haxeMacros in c += """com.dongxiguo.autoParser.AutoParser.BUILDER.defineMacroClass([ "com.thoughtworks.restRpc.core.UriTemplate" ], "com.thoughtworks.restRpc.core.UriTemplateParser")"""
+}
+
+for (c <- AllTestTargetConfigurations) yield {
+  haxeMacros in c += """com.dongxiguo.autoParser.AutoFormatter.BUILDER.defineMacroClass([ "com.thoughtworks.restRpc.core.UriTemplate" ], "com.thoughtworks.restRpc.core.UriTemplateFormatter")"""
+}

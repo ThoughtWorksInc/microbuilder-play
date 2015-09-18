@@ -10,6 +10,7 @@ class MyResponse {
 
 @:nativeGen
 @:final
+@:strictJsonType
 class MyInnerEntity {
   public function new() {}
   var code: Int;
