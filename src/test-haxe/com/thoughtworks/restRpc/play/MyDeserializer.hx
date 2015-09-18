@@ -8,3 +8,10 @@ using com.qifun.jsonStream.Plugins;
 class MyDeserializer {
 
 }
+
+@:build(com.qifun.jsonStream.JsonSerializer.generateSerializer([
+    "com.thoughtworks.restRpc.play.MyModels"
+]))
+class MySerializer {
+
+}

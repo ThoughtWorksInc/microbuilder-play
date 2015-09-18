@@ -1,23 +1,14 @@
 package com.thoughtworks.restRpc.play
 
 import com.thoughtworks.restRpc.core.IUriTemplate
+import haxe.root.Reflect
 
-class FakeUriTemplate extends IUriTemplate {
-  override def get_method(): String = "GET"
-
+class FakeUriTemplate(methodName: String, resultUrl: String, numOfUrlParams:Int) extends IUriTemplate {
+  override def get_method(): String = methodName
   override def render(parameters: scala.AnyRef): String = {
-    val parametersIterator = WrappedHaxeIterator(parameters)
-    var url = new StringBuilder
-    url ++= "/my-method/"
-    parametersIterator.next() match {
-      case JsonStreamExtractor.Int32(number) =>
-        url ++= number.toString
+    for(_ <- 1 to numOfUrlParams) {
+      Reflect.callMethod(parameters, Reflect.field(parameters, "next"), new haxe.root.Array())
     }
-    url ++= "/name/"
-    parametersIterator.next() match {
-      case JsonStreamExtractor.String(stringValue) =>
-        url ++= stringValue
-        url.toString
-    }
+    resultUrl
   }
 }
