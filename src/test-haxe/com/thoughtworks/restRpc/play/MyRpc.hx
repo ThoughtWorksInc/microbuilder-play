@@ -7,6 +7,7 @@ import com.thoughtworks.restRpc.play.MyModels.CreatedResponse;
 
 
 @:nativeGen
+//@:structuralFailure(foo.bar.Baz)
 interface MyRpc {
 
     @:route("GET", "/my-method/{p1}/name/{name}")
