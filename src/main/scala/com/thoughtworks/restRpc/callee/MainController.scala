@@ -1,6 +1,5 @@
 package com.thoughtworks.restRpc.callee
 
-import akka.actor.Status.Success
 import com.qifun.jsonStream.JsonStream
 import com.qifun.jsonStream.rpc.{IJsonResponseHandler, IJsonService}
 import com.thoughtworks.restRpc.core.IRouteConfiguration
@@ -23,8 +22,8 @@ class MainController(rpcImplementations: Seq[RpcEntry]) extends Controller {
           val allParameters = uriParameters :+ bodyJsonStream
           val resp: IJsonResponseHandler = new IJsonResponseHandler {
             override def onFailure(jsonStream: JsonStream): Unit = {
-               promise.complete(Success(NotFound(jsonStream)(new Writable[JsonStream] {
-               })))
+//               promise.complete(Success(NotFound(jsonStream)(new Writable[JsonStream] {
+//               })))
             }
 
             override def onSuccess(jsonStream: JsonStream): Unit = {
