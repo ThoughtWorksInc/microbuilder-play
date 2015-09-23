@@ -6,7 +6,7 @@ import com.github.dreamhead.moco.{Moco, _}
 import com.ning.http.client.AsyncHttpClientConfig
 import com.thoughtworks.restRpc.core.{IRouteConfiguration, IUriTemplate}
 import com.thoughtworks.restRpc.play.Implicits._
-import com.thoughtworks.restRpc.play.exception.RpcApplicationException
+import com.thoughtworks.restRpc.play.exception.RestRpcException.TextApplicationException
 import org.specs2.mock.{Mockito => SpecMockito}
 import org.specs2.mutable.Specification
 import org.specs2.specification.{AfterAll, BeforeAll}
@@ -30,7 +30,7 @@ class RpcOutgoingTest extends Specification with SpecMockito with BeforeAll with
 
   "This is a specification of using rest-rpc-play tools to make http requests".txt
 
-  "Should throw RpcApplicationException with TEXT_APPLICATION_FAILURE when structuralFailure is not configured" >> {
+  "Should throw TextApplicationException with TEXT_APPLICATION_FAILURE when structuralFailure is not configured" >> {
     val configuration: IRouteConfiguration = mock[IRouteConfiguration]
     configuration.failureClassName() returns null
     val template: IUriTemplate = new FakeUriTemplate("GET", "/my-method/1.0/name/failure", 2)
@@ -40,9 +40,9 @@ class RpcOutgoingTest extends Specification with SpecMockito with BeforeAll with
       new PlayOutgoingJsonService("http://localhost:8090", configuration, mockWsApi)
     )
 
-    Await.result(myRpc.myMethod(1, "failure"), Duration(5, SECONDS)) must (throwA[RpcApplicationException] like {
-      case RpcApplicationException(failure) => failure.getParams().__get(0).asInstanceOf[String] === "server error"
-    })
+    Await.result(myRpc.myMethod(1, "failure"), Duration(5, SECONDS)) must throwA.like {
+      case TextApplicationException(textError) => textError === "server error"
+    }
   }
 
   "Should convert myMethod to http get request and get the response" >> {
