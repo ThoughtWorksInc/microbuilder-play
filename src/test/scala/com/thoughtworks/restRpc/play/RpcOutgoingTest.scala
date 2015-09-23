@@ -32,7 +32,7 @@ class RpcOutgoingTest extends Specification with SpecMockito with BeforeAll with
 
   "Should throw TextApplicationException with TEXT_APPLICATION_FAILURE when structuralFailure is not configured" >> {
     val configuration: IRouteConfiguration = mock[IRouteConfiguration]
-    configuration.failureClassName() returns null
+    configuration.get_failureClassName returns null
     val template: IUriTemplate = new FakeUriTemplate("GET", "/my-method/1.0/name/failure", 2)
     configuration.nameToUriTemplate("myMethod") returns template
 

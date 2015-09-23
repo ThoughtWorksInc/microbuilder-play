@@ -34,7 +34,7 @@ class RpcOutgoingWithFailureTest extends Specification with SpecMockito with Bef
 
   "Should throw StructuralApplicationException with STRUCTURAL_APPLICATION_FAILURE when structuralFailure is configured" >> {
     val configuration: IRouteConfiguration = mock[IRouteConfiguration]
-    configuration.failureClassName() returns "com.thoughtworks.restRpc.play.GeneralFailure"
+    configuration.get_failureClassName returns "com.thoughtworks.restRpc.play.GeneralFailure"
     val template: IUriTemplate = new FakeUriTemplate("GET", "/my-method/1.0/name/failure", 2)
     configuration.nameToUriTemplate("myMethod") returns template
 

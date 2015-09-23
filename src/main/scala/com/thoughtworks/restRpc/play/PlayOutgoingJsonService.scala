@@ -70,7 +70,7 @@ class PlayOutgoingJsonService(urlPrefix: String, routes: IRouteConfiguration, ws
       case Success(response) if response.status >= 200 && response.status < 400 =>
         responseHandler.onSuccess(TextParser.parseString(response.body))
       case Success(response) =>
-        if (routes.failureClassName == null) {
+        if (routes.get_failureClassName == null) {
           val testFailure = CoreSerializer.dynamicSerialize(haxe.root.ValueType.TEnum(classOf[RestRpcFailure]), RestRpcFailure.TEXT_APPLICATION_FAILURE(response.body))
           responseHandler.onFailure(JsonStream.OBJECT(Iterator(testFailure)))
         } else {
@@ -86,7 +86,7 @@ class PlayOutgoingJsonService(urlPrefix: String, routes: IRouteConfiguration, ws
                           Iterator(
                             new JsonStreamPair(
                               "failure", JsonStream.OBJECT(
-                                Iterator(new JsonStreamPair(routes.failureClassName, TextParser.parseString(response.body)))
+                                Iterator(new JsonStreamPair(routes.get_failureClassName, TextParser.parseString(response.body)))
                               )
                             )
                           )
