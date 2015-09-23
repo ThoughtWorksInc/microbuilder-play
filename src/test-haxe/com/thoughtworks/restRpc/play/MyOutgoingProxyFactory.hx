@@ -5,6 +5,7 @@ using com.thoughtworks.restRpc.play.MyDeserializer;
 
 
 @:build(com.qifun.jsonStream.rpc.OutgoingProxyFactory.generateOutgoingProxyFactory([
-  "com.thoughtworks.restRpc.play.MyRpc"
+  "com.thoughtworks.restRpc.play.MyRpc",
+  "com.thoughtworks.restRpc.play.MyRpcWithStructuralException"
 ]))
 class MyOutgoingProxyFactory {}

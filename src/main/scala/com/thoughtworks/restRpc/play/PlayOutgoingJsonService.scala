@@ -3,10 +3,10 @@ package com.thoughtworks.restRpc.play
 import java.io.ByteArrayOutputStream
 
 import com.qifun.jsonStream.{JsonStreamPair, JsonStream}
-import com.qifun.jsonStream.io.{PrettyTextPrinter, TextParser}
+import com.qifun.jsonStream.io.{TextParser,PrettyTextPrinter}
 import com.qifun.jsonStream.rpc.{IJsonResponseHandler, ICompleteHandler1, IFuture1, IJsonService}
 import com.thoughtworks.restRpc.core.{CoreSerializer, Failure => RestRpcFailure, IRouteConfiguration, IUriTemplate}
-import com.thoughtworks.restRpc.play.exception.RpcApplicationException
+import com.thoughtworks.restRpc.play.exception.RestRpcException._
 import haxe.io.Output
 import play.api.http.Writeable
 import play.api.libs.ws.{WSAPI, WSRequest}
@@ -24,8 +24,12 @@ object Implicits {
 
       override def onFailure(obj: scala.Any): Unit = {
         val failure = obj.asInstanceOf[RestRpcFailure]
+        //TODO： 不要使用getTag
         failure.getTag match {
-          case "TEXT_APPLICATION_FAILURE" => p failure new RpcApplicationException(failure)
+          case "TEXT_APPLICATION_FAILURE" =>
+            p failure new TextApplicationException(haxe.root.Type.enumParameters(failure).__get(0).asInstanceOf[String])
+          case "STRUCTURAL_APPLICATION_FAILURE" =>
+            p failure new StructuralApplicationException(haxe.root.Type.enumParameters(failure).__get(0))
         }
       }
     })
@@ -36,7 +40,7 @@ object Implicits {
 
 class PlayOutgoingJsonService(urlPrefix: String, routes: IRouteConfiguration, wsAPI: WSAPI)(implicit executionContext: ExecutionContext) extends IJsonService {
 
-  def prepareWSRequest(parameters:WrappedHaxeIterator[JsonStream], pair:JsonStreamPair): WSRequest = {
+  def prepareWSRequest(parameters: WrappedHaxeIterator[JsonStream], pair: JsonStreamPair): WSRequest = {
     val template: IUriTemplate = routes.nameToUriTemplate(pair.key)
     val request = wsAPI.url(urlPrefix + template.render(parameters.haxeIterator)).withMethod(template.get_method())
     val wsRequest = {
@@ -63,15 +67,37 @@ class PlayOutgoingJsonService(urlPrefix: String, routes: IRouteConfiguration, ws
 
   def handleResponse(wsRequest: WSRequest, responseHandler: IJsonResponseHandler): Unit = {
     wsRequest.execute().onComplete {
+      case Success(response) if response.status >= 200 && response.status < 400 =>
+        responseHandler.onSuccess(TextParser.parseString(response.body))
       case Success(response) =>
-        if (response.status >= 200 && response.status < 400) {
-          responseHandler.onSuccess(TextParser.parseString(response.body))
+        if (routes.failureClassName == null) {
+          val testFailure = CoreSerializer.dynamicSerialize(haxe.root.ValueType.TEnum(classOf[RestRpcFailure]), RestRpcFailure.TEXT_APPLICATION_FAILURE(response.body))
+          responseHandler.onFailure(JsonStream.OBJECT(Iterator(testFailure)))
         } else {
-          //if //@:structuralFailure(foo.bar.Baz) exist, then STRUCTURAL_APPLICATION_FAILURE else TEXT_APPLICATION_FAILURE
-          if (routes.failureClassName() == null) {
-            val testFailure = CoreSerializer.dynamicSerialize(haxe.root.ValueType.TEnum(classOf[RestRpcFailure]), RestRpcFailure.TEXT_APPLICATION_FAILURE(response.body))
-            responseHandler.onFailure(JsonStream.OBJECT(Iterator(testFailure)))
-          }
+          //TODO：处理返回的不是json的这种情况
+          responseHandler.onFailure(
+            JsonStream.OBJECT(
+              Iterator(
+                new JsonStreamPair(
+                  "com.thoughtworks.restRpc.core.Failure", JsonStream.OBJECT(
+                    Iterator(
+                      new JsonStreamPair(
+                        "STRUCTURAL_APPLICATION_FAILURE", JsonStream.OBJECT(
+                          Iterator(
+                            new JsonStreamPair(
+                              "failure", JsonStream.OBJECT(
+                                Iterator(new JsonStreamPair(routes.failureClassName, TextParser.parseString(response.body)))
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
         }
       case Failure(e) =>
         //NATIVE_FAILURE
