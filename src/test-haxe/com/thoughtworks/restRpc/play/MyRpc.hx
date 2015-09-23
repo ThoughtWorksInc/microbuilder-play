@@ -5,12 +5,10 @@ import com.thoughtworks.restRpc.play.MyModels.MyResponse;
 import com.thoughtworks.restRpc.play.MyModels.Book;
 import com.thoughtworks.restRpc.play.MyModels.CreatedResponse;
 
-
 @:nativeGen
-//@:structuralFailure(foo.bar.Baz)
 interface MyRpc {
 
-    @:route("GET", "/my-method/{p1}/name/{name}")
+    @:route("GET", "/my-method/{id}/name/{name}")
     function myMethod(id:Int, name:String):Future<MyResponse>; // Future1   apply
 
     @:route("POST", "/{resourceName}")

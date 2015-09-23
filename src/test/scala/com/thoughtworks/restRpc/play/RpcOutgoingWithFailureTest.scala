@@ -33,12 +33,9 @@ class RpcOutgoingWithFailureTest extends Specification with SpecMockito with Bef
   "This is a specification of how rest rpc handle server error response".txt
 
   "Should throw StructuralApplicationException with STRUCTURAL_APPLICATION_FAILURE when structuralFailure is configured" >> {
-    val configuration: IRouteConfiguration = mock[IRouteConfiguration]
-    configuration.get_failureClassName returns "com.thoughtworks.restRpc.play.GeneralFailure"
-    val template: IUriTemplate = new FakeUriTemplate("GET", "/my-method/1.0/name/failure", 2)
-    configuration.nameToUriTemplate("myMethod") returns template
+    val configuration: IRouteConfiguration = MyRouteConfigurationFactory.routeConfiguration_com_thoughtworks_restRpc_play_MyRpcWithStructuralException
 
-    val myRpc: MyRpcWithStructualException = MyOutgoingProxyFactory.outgoingProxy_com_thoughtworks_restRpc_play_MyRpcWithStructualException(
+    val myRpc: MyRpcWithStructuralException = MyOutgoingProxyFactory.outgoingProxy_com_thoughtworks_restRpc_play_MyRpcWithStructuralException(
       new PlayOutgoingJsonService("http://localhost:8091", configuration, mockWsApi)
     )
 
@@ -50,7 +47,7 @@ class RpcOutgoingWithFailureTest extends Specification with SpecMockito with Bef
 
   def beforeAll() {
     val server = Moco.httpServer(8091)
-    server.get(Moco.by(Moco.uri("/my-method/1.0/name/failure"))).response(Moco.`with`(Moco.text("{\"errorMsg\":\"not found\"}")), Moco.status(404))
+    server.get(Moco.by(Moco.uri("/my-method/1/name/failure"))).response(Moco.`with`(Moco.text("{\"errorMsg\":\"not found\"}")), Moco.status(404))
 
     theServer = Runner.runner(server)
     theServer.start()
