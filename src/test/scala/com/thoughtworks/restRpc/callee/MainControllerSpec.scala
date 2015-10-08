@@ -4,6 +4,8 @@ import com.qifun.jsonStream.JsonStream
 import com.qifun.jsonStream.io.TextParser
 import com.qifun.jsonStream.rpc.{IJsonResponseHandler, IJsonService}
 import com.thoughtworks.restRpc.core.{IRouteConfiguration, IUriTemplate}
+import com.thoughtworks.restRpc.play.MyIncomingProxyFactory
+import com.thoughtworks.restRpc.play.outgoingProxies_MyOutgoingProxyFactory.OutgoingProxy_com_thoughtworks_restRpc_play_MyRpc
 import haxe.root
 import org.junit.runner._
 import org.specs2.mutable._
@@ -46,7 +48,7 @@ class MainControllerSpec extends Specification {
 
 
   "call add(1, 2) === 3" in {
-//    MyIncomingProxyFactory.incomingProxy_com_thoughtworks_restRpc_play_MyRpc()
+//    MyIncomingProxyFactory.incomingProxy_com_thoughtworks_restRpc_play_MyRpc(new OutgoingProxy_com_thoughtworks_restRpc_play_MyRpc())
     val rpcEntry = new RpcEntry(new RouteConfiguration(), new IJsonService {override def push(jsonStream: JsonStream): Unit = ???
 
       override def apply(jsonStream: JsonStream, iJsonResponseHandler: IJsonResponseHandler): Unit = ???
