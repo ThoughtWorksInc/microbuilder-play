@@ -10,6 +10,7 @@ class MyResponse {
 
 @:nativeGen
 @:final
+@:strictJsonType
 class MyInnerEntity {
   public function new() {}
   var code: Int;
@@ -33,3 +34,11 @@ class CreatedResponse {
     public function new() {}
     var result:String;
 }
+
+@:nativeGen
+@:final
+class GeneralFailure {
+    public function new() {}
+    public var errorMsg:String;
+}
+

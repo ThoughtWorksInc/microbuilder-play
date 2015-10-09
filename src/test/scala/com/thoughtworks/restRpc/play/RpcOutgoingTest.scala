@@ -6,8 +6,11 @@ import com.github.dreamhead.moco.{Moco, _}
 import com.ning.http.client.AsyncHttpClientConfig
 import com.thoughtworks.restRpc.core.{IRouteConfiguration, IUriTemplate}
 import com.thoughtworks.restRpc.play.Implicits._
+import com.thoughtworks.restRpc.play.exception.RestRpcException.TextApplicationException
+import org.junit.runner.RunWith
 import org.specs2.mock.{Mockito => SpecMockito}
 import org.specs2.mutable.Specification
+import org.specs2.runner.JUnitRunner
 import org.specs2.specification.{AfterAll, BeforeAll}
 import play.api.libs.ws._
 import play.api.libs.ws.ning._
@@ -17,6 +20,7 @@ import scala.concurrent._
 import scala.concurrent.duration.Duration
 import scala.language.implicitConversions
 
+@RunWith(classOf[JUnitRunner])
 class RpcOutgoingTest extends Specification with SpecMockito with BeforeAll with AfterAll {
   val ws:WSClient = new NingWSClient(new AsyncHttpClientConfig.Builder().build())
 
@@ -29,10 +33,20 @@ class RpcOutgoingTest extends Specification with SpecMockito with BeforeAll with
 
   "This is a specification of using rest-rpc-play tools to make http requests".txt
 
+  "Should throw TextApplicationException with TEXT_APPLICATION_FAILURE when structuralFailure is not configured" >> {
+    val configuration: IRouteConfiguration = MyRouteConfigurationFactory.routeConfiguration_com_thoughtworks_restRpc_play_MyRpc
+
+    val myRpc: MyRpc = MyOutgoingProxyFactory.outgoingProxy_com_thoughtworks_restRpc_play_MyRpc(
+      new PlayOutgoingJsonService("http://localhost:8090", configuration, mockWsApi)
+    )
+
+    Await.result(myRpc.myMethod(1, "failure"), Duration(5, SECONDS)) must throwA.like {
+      case TextApplicationException(textError) => textError === "server error"
+    }
+  }
+
   "Should convert myMethod to http get request and get the response" >> {
-    val configuration: IRouteConfiguration = mock[IRouteConfiguration]
-    val template: IUriTemplate = new FakeUriTemplate("GET", "/my-method/1.0/name/abc", 2)
-    configuration.nameToUriTemplate("myMethod") returns template
+    val configuration: IRouteConfiguration = MyRouteConfigurationFactory.routeConfiguration_com_thoughtworks_restRpc_play_MyRpc
 
     val myRpc: MyRpc = MyOutgoingProxyFactory.outgoingProxy_com_thoughtworks_restRpc_play_MyRpc(
       new PlayOutgoingJsonService("http://localhost:8090", configuration, mockWsApi)
@@ -45,10 +59,7 @@ class RpcOutgoingTest extends Specification with SpecMockito with BeforeAll with
   }
 
   "Should convert createResource to http post request and get created response" >> {
-    val configuration: IRouteConfiguration = mock[IRouteConfiguration]
-
-    val template: IUriTemplate = new FakeUriTemplate("POST", "/books", 1)
-    configuration.nameToUriTemplate("createResource") returns template
+    val configuration: IRouteConfiguration = MyRouteConfigurationFactory.routeConfiguration_com_thoughtworks_restRpc_play_MyRpc
 
     val myRpc: MyRpc = MyOutgoingProxyFactory.outgoingProxy_com_thoughtworks_restRpc_play_MyRpc(
       new PlayOutgoingJsonService("http://localhost:8090", configuration, mockWsApi)
@@ -61,13 +72,15 @@ class RpcOutgoingTest extends Specification with SpecMockito with BeforeAll with
 
   def beforeAll() {
     val server = Moco.httpServer(8090)
-    server.get(Moco.by(Moco.uri("/my-method/1.0/name/abc"))).response("""
+    server.get(Moco.by(Moco.uri("/my-method/1/name/abc"))).response("""
           {
             "myInnerEntity": {
               "code":1,
               "message":"this is a message"
             }
           }""")
+
+    server.get(Moco.by(Moco.uri("/my-method/1/name/failure"))).response(Moco.`with`(Moco.text("server error")), Moco.status(500))
 
     server.post(Moco.by(Moco.uri("/books"))).response(
       """

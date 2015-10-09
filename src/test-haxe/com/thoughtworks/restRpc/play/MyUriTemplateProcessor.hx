@@ -1,6 +1,6 @@
 package com.thoughtworks.restRpc.play;
 
-import com.thoughtworks.restRpc.core.RouteConfiguration;
+import com.thoughtworks.restRpc.core.IRouteConfiguration;
 using com.qifun.jsonStream.Plugins;
 using com.thoughtworks.restRpc.play.MyDeserializer;
 
@@ -11,4 +11,5 @@ using com.thoughtworks.restRpc.play.MyDeserializer;
 class MyUriTemplateProcessor {
 
     static var processor_com_thoughtworks_restRpc_play_MyRpc:IRouteConfiguration;
+    static var processor_com_thoughtworks_restRpc_play_MyRpcWithStructualException:IRouteConfiguration;
 }
