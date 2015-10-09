@@ -40,7 +40,11 @@ class RouteConfiguration extends IRouteConfiguration {
 
   override def __hx_lookupField_f(field: String, throwErrors: Boolean): Double = ???
 
-  override def matchUri(uri: String): Array[JsonStream] = new Array[JsonStream](2)
+  override def get_failureClassName(): String = ???
+
+  override def matchUri(method: String, uri: String, body: JsonStream, contentType: String): Array[JsonStream] = {
+    new Array[JsonStream](2)
+  }
 }
 
 @RunWith(classOf[JUnitRunner])

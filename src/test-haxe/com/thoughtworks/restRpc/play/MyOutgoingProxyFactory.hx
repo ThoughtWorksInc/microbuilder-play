@@ -2,6 +2,7 @@ package com.thoughtworks.restRpc.play;
 
 using com.qifun.jsonStream.Plugins;
 using com.thoughtworks.restRpc.play.MyDeserializer;
+using com.thoughtworks.restRpc.play.MySerializer;
 
 
 @:build(com.qifun.jsonStream.rpc.OutgoingProxyFactory.generateOutgoingProxyFactory([
