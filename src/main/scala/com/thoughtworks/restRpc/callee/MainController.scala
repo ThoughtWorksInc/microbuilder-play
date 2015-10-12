@@ -19,12 +19,15 @@ class MainController(rpcImplementations: Seq[RpcEntry]) extends Controller {
 
   def rpc(uri: String) = Action.async { request =>
 
-    val bodyJsonStream: JsonStream = JsonStream.STRING(request.body.asText.get)
+    val bodyJsonStream:Option[JsonStream] = request.body.asText match {
+      case None => None
+      case Some(jsonStream) => Some(JsonStream.STRING(jsonStream))
+    }
 
     val promise = Promise[Result]
 
     rpcImplementations.map(rpcImplementation => {
-      rpcImplementation.routeConfiguration.matchUri(request.method, uri, bodyJsonStream, request.contentType.getOrElse(null)) match {
+      rpcImplementation.routeConfiguration.matchUri(request.method, uri, bodyJsonStream.getOrElse(null), request.contentType.getOrElse(null)) match {
         case null => promise.success(NotFound)
         case jsonStream: Array[JsonStream] => {
 

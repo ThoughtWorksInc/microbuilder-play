@@ -4,8 +4,6 @@ import com.qifun.jsonStream.JsonStream
 import com.qifun.jsonStream.io.TextParser
 import com.qifun.jsonStream.rpc.{IJsonResponseHandler, IJsonService}
 import com.thoughtworks.restRpc.core.{IRouteConfiguration, IUriTemplate}
-import com.thoughtworks.restRpc.play.MyIncomingProxyFactory
-import com.thoughtworks.restRpc.play.outgoingProxies_MyOutgoingProxyFactory.OutgoingProxy_com_thoughtworks_restRpc_play_MyRpc
 import haxe.root
 import org.junit.runner._
 import org.specs2.mutable._
@@ -43,7 +41,7 @@ class RouteConfiguration extends IRouteConfiguration {
   override def get_failureClassName(): String = ???
 
   override def matchUri(method: String, uri: String, body: JsonStream, contentType: String): Array[JsonStream] = {
-    new Array[JsonStream](2)
+    new Array[JsonStream](1)
   }
 }
 
@@ -52,22 +50,24 @@ class MainControllerSpec extends Specification {
 
 
   "call add(1, 2) === 3" in {
-//    MyIncomingProxyFactory.incomingProxy_com_thoughtworks_restRpc_play_MyRpc(new OutgoingProxy_com_thoughtworks_restRpc_play_MyRpc())
-    val rpcEntry = new RpcEntry(new RouteConfiguration(), new IJsonService {override def push(jsonStream: JsonStream): Unit = ???
+    lazy val routeConfiguration = new RouteConfiguration()
 
-      override def apply(jsonStream: JsonStream, iJsonResponseHandler: IJsonResponseHandler): Unit = ???
+    val rpcEntry = new RpcEntry(routeConfiguration, new IJsonService {
+      override def push(data: JsonStream): Unit = ???
+
+      override def apply(request: JsonStream, responseHandler: IJsonResponseHandler): Unit = {
+        responseHandler.onSuccess(TextParser.parseString( """{"result": "3"}"""))
+      }
     })
 
-    val rpcEntrySeq = Seq.empty[RpcEntry]
-
-    rpcEntrySeq :+ rpcEntry
+    val rpcEntrySeq = Seq(rpcEntry)
 
     val mainController = new MainController(rpcEntrySeq)
 
     val result: Future[play.api.mvc.Result] = mainController.rpc("/method/name/1/2").apply(FakeRequest())
 
-    val expected = TextParser.parseString( """{"result": "3"}""")
+    contentAsString(result) must contain("result")
+    contentAsString(result) must contain("3")
 
-    contentAsBytes(result) must equalTo(expected)
   }
 }
