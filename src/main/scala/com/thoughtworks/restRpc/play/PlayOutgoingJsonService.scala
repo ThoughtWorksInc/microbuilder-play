@@ -3,7 +3,7 @@ package com.thoughtworks.restRpc.play
 import java.io.ByteArrayOutputStream
 
 import com.qifun.jsonStream.{JsonStreamPair, JsonStream}
-import com.qifun.jsonStream.io.{TextParser,PrettyTextPrinter}
+import com.qifun.jsonStream.io.{TextParser, PrettyTextPrinter}
 import com.qifun.jsonStream.rpc.{IJsonResponseHandler, ICompleteHandler1, IFuture1, IJsonService}
 import com.thoughtworks.restRpc.core.{CoreSerializer, Failure => RestRpcFailure, IRouteConfiguration, IUriTemplate}
 import com.thoughtworks.restRpc.play.exception.RestRpcException._
@@ -30,6 +30,8 @@ object Implicits {
             p failure new TextApplicationException(haxe.root.Type.enumParameters(failure).__get(0).asInstanceOf[String])
           case "STRUCTURAL_APPLICATION_FAILURE" =>
             p failure new StructuralApplicationException(haxe.root.Type.enumParameters(failure).__get(0))
+          case "SERIALIZATION_FAILURE" =>
+            p failure new WrongResponseFormatException(haxe.root.Type.enumParameters(failure).__get(0).asInstanceOf[String])
         }
       }
     })
@@ -65,28 +67,44 @@ class PlayOutgoingJsonService(urlPrefix: String, routes: IRouteConfiguration, ws
     wsRequest
   }
 
+  def withSerializationExceptionHandling(responseHandler: IJsonResponseHandler, body: String)(func: () => Unit): Unit = {
+    try {
+      func()
+    } catch {
+      case e: Exception =>
+        val serializationFailure = CoreSerializer.dynamicSerialize(haxe.root.ValueType.TEnum(classOf[RestRpcFailure]),
+                                                                   RestRpcFailure.SERIALIZATION_FAILURE("Wrong Json format: " + body))
+        responseHandler.onFailure(JsonStream.OBJECT(Iterator(serializationFailure)))
+    }
+  }
+
   def handleResponse(wsRequest: WSRequest, responseHandler: IJsonResponseHandler): Unit = {
-    wsRequest.execute().onComplete {
-      case Success(response) if response.status >= 200 && response.status < 400 =>
-        responseHandler.onSuccess(TextParser.parseString(response.body))
-      case Success(response) =>
-        if (routes.get_failureClassName == null) {
-          val testFailure = CoreSerializer.dynamicSerialize(haxe.root.ValueType.TEnum(classOf[RestRpcFailure]), RestRpcFailure.TEXT_APPLICATION_FAILURE(response.body))
-          responseHandler.onFailure(JsonStream.OBJECT(Iterator(testFailure)))
-        } else {
-          //TODO：处理返回的不是json的这种情况
-          responseHandler.onFailure(
-            JsonStream.OBJECT(
-              Iterator(
-                new JsonStreamPair(
-                  "com.thoughtworks.restRpc.core.Failure", JsonStream.OBJECT(
-                    Iterator(
-                      new JsonStreamPair(
-                        "STRUCTURAL_APPLICATION_FAILURE", JsonStream.OBJECT(
-                          Iterator(
-                            new JsonStreamPair(
-                              "failure", JsonStream.OBJECT(
-                                Iterator(new JsonStreamPair(routes.get_failureClassName, TextParser.parseString(response.body)))
+    wsRequest.execute().onComplete { response =>
+      response match {
+        case Success(response) if response.status >= 200 && response.status < 400 =>
+          withSerializationExceptionHandling(responseHandler, response.body) { () =>
+            responseHandler.onSuccess(TextParser.parseString(response.body))
+          }
+        case Success(response) =>
+          if (routes.get_failureClassName == null) {
+            val textFailure = CoreSerializer.dynamicSerialize(haxe.root.ValueType.TEnum(classOf[RestRpcFailure]), RestRpcFailure.TEXT_APPLICATION_FAILURE(response.body))
+            responseHandler.onFailure(JsonStream.OBJECT(Iterator(textFailure)))
+          } else {
+            withSerializationExceptionHandling(responseHandler, response.body) { () =>
+              responseHandler.onFailure(
+                JsonStream.OBJECT(
+                  Iterator(
+                    new JsonStreamPair(
+                      "com.thoughtworks.restRpc.core.Failure", JsonStream.OBJECT(
+                        Iterator(
+                          new JsonStreamPair(
+                            "STRUCTURAL_APPLICATION_FAILURE", JsonStream.OBJECT(
+                              Iterator(
+                                new JsonStreamPair(
+                                  "failure", JsonStream.OBJECT(
+                                    Iterator(new JsonStreamPair(routes.get_failureClassName, TextParser.parseString(response.body)))
+                                  )
+                                )
                               )
                             )
                           )
@@ -96,12 +114,13 @@ class PlayOutgoingJsonService(urlPrefix: String, routes: IRouteConfiguration, ws
                   )
                 )
               )
-            )
-          )
-        }
-      case Failure(e) =>
-        //NATIVE_FAILURE
-        responseHandler.onFailure(JsonStream.STRING(e.getMessage))
+            }
+          }
+        case Failure(e) =>
+          val nativeFalure = CoreSerializer.dynamicSerialize(haxe.root.ValueType.TEnum(classOf[RestRpcFailure]), RestRpcFailure.NATIVE_FAILURE(e.getMessage))
+          responseHandler.onFailure(JsonStream.OBJECT(Iterator(nativeFalure)))
+      }
+
     }
   }
 

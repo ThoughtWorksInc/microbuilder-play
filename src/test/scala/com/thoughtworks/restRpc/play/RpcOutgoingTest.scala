@@ -6,7 +6,7 @@ import com.github.dreamhead.moco.{Moco, _}
 import com.ning.http.client.AsyncHttpClientConfig
 import com.thoughtworks.restRpc.core.{IRouteConfiguration, IUriTemplate}
 import com.thoughtworks.restRpc.play.Implicits._
-import com.thoughtworks.restRpc.play.exception.RestRpcException.TextApplicationException
+import com.thoughtworks.restRpc.play.exception.RestRpcException.{TextApplicationException, NativeException, WrongResponseFormatException}
 import org.junit.runner.RunWith
 import org.specs2.mock.{Mockito => SpecMockito}
 import org.specs2.mutable.Specification
@@ -70,6 +70,18 @@ class RpcOutgoingTest extends Specification with SpecMockito with BeforeAll with
     response.result === "created"
   }
 
+  "Should throw native exception if the response is not legal json" >> {
+    val configuration: IRouteConfiguration = MyRouteConfigurationFactory.routeConfiguration_com_thoughtworks_restRpc_play_MyRpc
+
+    val myRpc: MyRpc = MyOutgoingProxyFactory.outgoingProxy_com_thoughtworks_restRpc_play_MyRpc(
+      new PlayOutgoingJsonService("http://localhost:8090", configuration, mockWsApi)
+    )
+
+    Await.result(myRpc.myMethod(1, "wrong_json"), Duration(5, SECONDS)) must throwA.like {
+      case WrongResponseFormatException(textError) => textError === "Wrong Json format: not a json"
+    }
+  }
+
   def beforeAll() {
     val server = Moco.httpServer(8090)
     server.get(Moco.by(Moco.uri("/my-method/1/name/abc"))).response("""
@@ -81,6 +93,7 @@ class RpcOutgoingTest extends Specification with SpecMockito with BeforeAll with
           }""")
 
     server.get(Moco.by(Moco.uri("/my-method/1/name/failure"))).response(Moco.`with`(Moco.text("server error")), Moco.status(500))
+    server.get(Moco.by(Moco.uri("/my-method/1/name/wrong_json"))).response(Moco.`with`(Moco.text("not a json")), Moco.status(200))
 
     server.post(Moco.by(Moco.uri("/books"))).response(
       """
