@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.thoughtworks.restRpc.play
+package com.thoughtworks.microbuilder.play
 
 import com.qifun.jsonStream.JsonStream
 import com.qifun.jsonStream.JsonStreamPair

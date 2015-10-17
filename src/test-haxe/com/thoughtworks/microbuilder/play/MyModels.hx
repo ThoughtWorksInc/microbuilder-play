@@ -1,4 +1,4 @@
-package com.thoughtworks.restRpc.play;
+package com.thoughtworks.microbuilder.play;
 
 @:nativeGen
 @:final

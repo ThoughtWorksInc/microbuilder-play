@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.thoughtworks.restRpc.play
+package com.thoughtworks.microbuilder.play
 
 import com.dongxiguo.continuation.utils.{ Generator => HaxeGenerator }
 import haxe.root.Reflect

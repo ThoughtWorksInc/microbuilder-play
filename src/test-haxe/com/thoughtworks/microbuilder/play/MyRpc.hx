@@ -1,9 +1,9 @@
-package com.thoughtworks.restRpc.play;
+package com.thoughtworks.microbuilder.play;
 
 import com.qifun.jsonStream.rpc.Future;
-import com.thoughtworks.restRpc.play.MyModels.MyResponse;
-import com.thoughtworks.restRpc.play.MyModels.Book;
-import com.thoughtworks.restRpc.play.MyModels.CreatedResponse;
+import com.thoughtworks.microbuilder.play.MyModels.MyResponse;
+import com.thoughtworks.microbuilder.play.MyModels.Book;
+import com.thoughtworks.microbuilder.play.MyModels.CreatedResponse;
 
 @:nativeGen
 interface MyRpc {

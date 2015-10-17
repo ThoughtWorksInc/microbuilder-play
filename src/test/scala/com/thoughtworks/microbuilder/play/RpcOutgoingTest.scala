@@ -1,12 +1,12 @@
-package com.thoughtworks.restRpc.play
+package com.thoughtworks.microbuilder.play
 
 import java.util.concurrent.TimeUnit.SECONDS
 
 import com.github.dreamhead.moco.{Moco, _}
 import com.ning.http.client.AsyncHttpClientConfig
-import com.thoughtworks.restRpc.core.{IRouteConfiguration, IUriTemplate}
-import com.thoughtworks.restRpc.play.Implicits._
-import com.thoughtworks.restRpc.play.exception.RestRpcException.{TextApplicationException, NativeException, WrongResponseFormatException}
+import com.thoughtworks.microbuilder.core.{IRouteConfiguration, IUriTemplate}
+import com.thoughtworks.microbuilder.play.Implicits._
+import com.thoughtworks.microbuilder.play.exception.MicrobuilderException.{TextApplicationException, NativeException, WrongResponseFormatException}
 import org.junit.runner.RunWith
 import org.specs2.mock.{Mockito => SpecMockito}
 import org.specs2.mutable.Specification
@@ -34,9 +34,9 @@ class RpcOutgoingTest extends Specification with SpecMockito with BeforeAll with
   "This is a specification of using microbuilder-play tools to make http requests".txt
 
   "Should throw TextApplicationException with TEXT_APPLICATION_FAILURE when structuralFailure is not configured" >> {
-    val configuration: IRouteConfiguration = MyRouteConfigurationFactory.routeConfiguration_com_thoughtworks_restRpc_play_MyRpc
+    val configuration: IRouteConfiguration = MyRouteConfigurationFactory.routeConfiguration_com_thoughtworks_microbuilder_play_MyRpc
 
-    val myRpc: MyRpc = MyOutgoingProxyFactory.outgoingProxy_com_thoughtworks_restRpc_play_MyRpc(
+    val myRpc: MyRpc = MyOutgoingProxyFactory.outgoingProxy_com_thoughtworks_microbuilder_play_MyRpc(
       new PlayOutgoingJsonService("http://localhost:8090", configuration, mockWsApi)
     )
 
@@ -46,9 +46,9 @@ class RpcOutgoingTest extends Specification with SpecMockito with BeforeAll with
   }
 
   "Should convert myMethod to http get request and get the response" >> {
-    val configuration: IRouteConfiguration = MyRouteConfigurationFactory.routeConfiguration_com_thoughtworks_restRpc_play_MyRpc
+    val configuration: IRouteConfiguration = MyRouteConfigurationFactory.routeConfiguration_com_thoughtworks_microbuilder_play_MyRpc
 
-    val myRpc: MyRpc = MyOutgoingProxyFactory.outgoingProxy_com_thoughtworks_restRpc_play_MyRpc(
+    val myRpc: MyRpc = MyOutgoingProxyFactory.outgoingProxy_com_thoughtworks_microbuilder_play_MyRpc(
       new PlayOutgoingJsonService("http://localhost:8090", configuration, mockWsApi)
     )
 
@@ -59,9 +59,9 @@ class RpcOutgoingTest extends Specification with SpecMockito with BeforeAll with
   }
 
   "Should convert createResource to http post request and get created response" >> {
-    val configuration: IRouteConfiguration = MyRouteConfigurationFactory.routeConfiguration_com_thoughtworks_restRpc_play_MyRpc
+    val configuration: IRouteConfiguration = MyRouteConfigurationFactory.routeConfiguration_com_thoughtworks_microbuilder_play_MyRpc
 
-    val myRpc: MyRpc = MyOutgoingProxyFactory.outgoingProxy_com_thoughtworks_restRpc_play_MyRpc(
+    val myRpc: MyRpc = MyOutgoingProxyFactory.outgoingProxy_com_thoughtworks_microbuilder_play_MyRpc(
       new PlayOutgoingJsonService("http://localhost:8090", configuration, mockWsApi)
     )
 
@@ -71,9 +71,9 @@ class RpcOutgoingTest extends Specification with SpecMockito with BeforeAll with
   }
 
   "Should throw native exception if the response is not legal json" >> {
-    val configuration: IRouteConfiguration = MyRouteConfigurationFactory.routeConfiguration_com_thoughtworks_restRpc_play_MyRpc
+    val configuration: IRouteConfiguration = MyRouteConfigurationFactory.routeConfiguration_com_thoughtworks_microbuilder_play_MyRpc
 
-    val myRpc: MyRpc = MyOutgoingProxyFactory.outgoingProxy_com_thoughtworks_restRpc_play_MyRpc(
+    val myRpc: MyRpc = MyOutgoingProxyFactory.outgoingProxy_com_thoughtworks_microbuilder_play_MyRpc(
       new PlayOutgoingJsonService("http://localhost:8090", configuration, mockWsApi)
     )
 

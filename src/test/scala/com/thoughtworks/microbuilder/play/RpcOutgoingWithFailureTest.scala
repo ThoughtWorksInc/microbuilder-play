@@ -1,12 +1,12 @@
-package com.thoughtworks.restRpc.play
+package com.thoughtworks.microbuilder.play
 
 import java.util.concurrent.TimeUnit.SECONDS
 
 import com.github.dreamhead.moco.{Moco, _}
 import com.ning.http.client.AsyncHttpClientConfig
-import com.thoughtworks.restRpc.core.{IRouteConfiguration, IUriTemplate}
-import com.thoughtworks.restRpc.play.Implicits._
-import com.thoughtworks.restRpc.play.exception.RestRpcException.StructuralApplicationException
+import com.thoughtworks.microbuilder.core.{IRouteConfiguration, IUriTemplate}
+import com.thoughtworks.microbuilder.play.Implicits._
+import com.thoughtworks.microbuilder.play.exception.MicrobuilderException.StructuralApplicationException
 import org.specs2.mock.{Mockito => SpecMockito}
 import org.specs2.mutable.Specification
 import org.specs2.specification.{AfterAll, BeforeAll}
@@ -33,9 +33,9 @@ class RpcOutgoingWithFailureTest extends Specification with SpecMockito with Bef
   "This is a specification of how rest rpc handle server error response".txt
 
   "Should throw StructuralApplicationException with STRUCTURAL_APPLICATION_FAILURE when structuralFailure is configured" >> {
-    val configuration: IRouteConfiguration = MyRouteConfigurationFactory.routeConfiguration_com_thoughtworks_restRpc_play_MyRpcWithStructuralException
+    val configuration: IRouteConfiguration = MyRouteConfigurationFactory.routeConfiguration_com_thoughtworks_microbuilder_play_MyRpcWithStructuralException
 
-    val myRpc: MyRpcWithStructuralException = MyOutgoingProxyFactory.outgoingProxy_com_thoughtworks_restRpc_play_MyRpcWithStructuralException(
+    val myRpc: MyRpcWithStructuralException = MyOutgoingProxyFactory.outgoingProxy_com_thoughtworks_microbuilder_play_MyRpcWithStructuralException(
       new PlayOutgoingJsonService("http://localhost:8091", configuration, mockWsApi)
     )
 

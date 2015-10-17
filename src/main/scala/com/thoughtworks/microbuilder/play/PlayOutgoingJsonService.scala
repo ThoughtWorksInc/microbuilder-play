@@ -1,12 +1,12 @@
-package com.thoughtworks.restRpc.play
+package com.thoughtworks.microbuilder.play
 
 import java.io.ByteArrayOutputStream
 
 import com.qifun.jsonStream.{JsonStreamPair, JsonStream}
 import com.qifun.jsonStream.io.{TextParser, PrettyTextPrinter}
 import com.qifun.jsonStream.rpc.{IJsonResponseHandler, ICompleteHandler1, IFuture1, IJsonService}
-import com.thoughtworks.restRpc.core.{CoreSerializer, Failure => RestRpcFailure, IRouteConfiguration, IUriTemplate}
-import com.thoughtworks.restRpc.play.exception.RestRpcException._
+import com.thoughtworks.microbuilder.core.{CoreSerializer, Failure => MicrobuilderFailure, IRouteConfiguration, IUriTemplate}
+import com.thoughtworks.microbuilder.play.exception.MicrobuilderException._
 import haxe.io.Output
 import play.api.http.Writeable
 import play.api.libs.ws.{WSAPI, WSRequest}
@@ -23,7 +23,7 @@ object Implicits {
       override def onSuccess(value: Value): Unit = p success value
 
       override def onFailure(obj: scala.Any): Unit = {
-        val failure = obj.asInstanceOf[RestRpcFailure]
+        val failure = obj.asInstanceOf[MicrobuilderFailure]
         //TODO： 不要使用getTag
         failure.getTag match {
           case "TEXT_APPLICATION_FAILURE" =>
@@ -72,8 +72,8 @@ class PlayOutgoingJsonService(urlPrefix: String, routes: IRouteConfiguration, ws
       func()
     } catch {
       case e: Exception =>
-        val serializationFailure = CoreSerializer.dynamicSerialize(haxe.root.ValueType.TEnum(classOf[RestRpcFailure]),
-                                                                   RestRpcFailure.SERIALIZATION_FAILURE("Wrong Json format: " + body))
+        val serializationFailure = CoreSerializer.dynamicSerialize(haxe.root.ValueType.TEnum(classOf[MicrobuilderFailure]),
+                                                                   MicrobuilderFailure.SERIALIZATION_FAILURE("Wrong Json format: " + body))
         responseHandler.onFailure(JsonStream.OBJECT(Iterator(serializationFailure)))
     }
   }
@@ -87,7 +87,7 @@ class PlayOutgoingJsonService(urlPrefix: String, routes: IRouteConfiguration, ws
           }
         case Success(response) =>
           if (routes.get_failureClassName == null) {
-            val textFailure = CoreSerializer.dynamicSerialize(haxe.root.ValueType.TEnum(classOf[RestRpcFailure]), RestRpcFailure.TEXT_APPLICATION_FAILURE(response.body))
+            val textFailure = CoreSerializer.dynamicSerialize(haxe.root.ValueType.TEnum(classOf[MicrobuilderFailure]), MicrobuilderFailure.TEXT_APPLICATION_FAILURE(response.body))
             responseHandler.onFailure(JsonStream.OBJECT(Iterator(textFailure)))
           } else {
             withSerializationExceptionHandling(responseHandler, response.body) { () =>
@@ -95,7 +95,7 @@ class PlayOutgoingJsonService(urlPrefix: String, routes: IRouteConfiguration, ws
                 JsonStream.OBJECT(
                   Iterator(
                     new JsonStreamPair(
-                      "com.thoughtworks.restRpc.core.Failure", JsonStream.OBJECT(
+                      "com.thoughtworks.microbuilder.core.Failure", JsonStream.OBJECT(
                         Iterator(
                           new JsonStreamPair(
                             "STRUCTURAL_APPLICATION_FAILURE", JsonStream.OBJECT(
@@ -117,7 +117,7 @@ class PlayOutgoingJsonService(urlPrefix: String, routes: IRouteConfiguration, ws
             }
           }
         case Failure(e) =>
-          val nativeFalure = CoreSerializer.dynamicSerialize(haxe.root.ValueType.TEnum(classOf[RestRpcFailure]), RestRpcFailure.NATIVE_FAILURE(e.getMessage))
+          val nativeFalure = CoreSerializer.dynamicSerialize(haxe.root.ValueType.TEnum(classOf[MicrobuilderFailure]), MicrobuilderFailure.NATIVE_FAILURE(e.getMessage))
           responseHandler.onFailure(JsonStream.OBJECT(Iterator(nativeFalure)))
       }
 
