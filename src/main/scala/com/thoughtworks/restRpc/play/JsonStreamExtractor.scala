@@ -1,5 +1,5 @@
 /*
- * rest-rpc-play
+ * microbuilder-play
  * Copyright 2015 ThoughtWorks, Inc. & 深圳岂凡网络有限公司 (Shenzhen QiFun Network Corp., LTD)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

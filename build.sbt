@@ -4,7 +4,7 @@ disablePlugins(HaxeCSharpPlugin)
 
 organization := "com.thoughtworks"
 
-name := "rest-rpc-play"
+name := "microbuilder-play"
 
 resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 

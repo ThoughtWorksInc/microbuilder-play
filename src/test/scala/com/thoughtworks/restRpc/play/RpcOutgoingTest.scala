@@ -31,7 +31,7 @@ class RpcOutgoingTest extends Specification with SpecMockito with BeforeAll with
 
   var theServer: Runner = null
 
-  "This is a specification of using rest-rpc-play tools to make http requests".txt
+  "This is a specification of using microbuilder-play tools to make http requests".txt
 
   "Should throw TextApplicationException with TEXT_APPLICATION_FAILURE when structuralFailure is not configured" >> {
     val configuration: IRouteConfiguration = MyRouteConfigurationFactory.routeConfiguration_com_thoughtworks_restRpc_play_MyRpc
