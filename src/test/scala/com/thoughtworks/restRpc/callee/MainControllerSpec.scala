@@ -2,8 +2,10 @@ package com.thoughtworks.restRpc.callee
 
 import com.qifun.jsonStream.JsonStream
 import com.qifun.jsonStream.io.TextParser
-import com.qifun.jsonStream.rpc.{IJsonResponseHandler, IJsonService}
+import com.qifun.jsonStream.rpc.IFuture1
 import com.thoughtworks.restRpc.core.{IRouteConfiguration, IUriTemplate}
+import com.thoughtworks.restRpc.play.Implicits.scalaFutureToJsonStreamFuture
+import com.thoughtworks.restRpc.play.{Book, CreatedResponse, MyIncomingProxyFactory, MyRpc, _}
 import haxe.root
 import org.junit.runner._
 import org.specs2.mutable._
@@ -41,7 +43,8 @@ class RouteConfiguration extends IRouteConfiguration {
   override def get_failureClassName(): String = ???
 
   override def matchUri(method: String, uri: String, body: JsonStream, contentType: String): Array[JsonStream] = {
-    new Array[JsonStream](1)
+    val jsonStream = TextParser.parseString("""{"myMethod" : [10, "test"]}""")
+    Array(jsonStream)
   }
 }
 
@@ -49,25 +52,34 @@ class RouteConfiguration extends IRouteConfiguration {
 class MainControllerSpec extends Specification {
 
 
-  "call add(1, 2) === 3" in {
+  "call myMethod(10, test) should get the myInnerEntity" in {
     lazy val routeConfiguration = new RouteConfiguration()
 
-    val rpcEntry = new RpcEntry(routeConfiguration, new IJsonService {
-      override def push(data: JsonStream): Unit = ???
-
-      override def apply(request: JsonStream, responseHandler: IJsonResponseHandler): Unit = {
-        responseHandler.onSuccess(TextParser.parseString( """{"result": "3"}"""))
+    val rpcEntry = new RpcEntry(routeConfiguration, MyIncomingProxyFactory.incomingProxy_com_thoughtworks_restRpc_play_MyRpc(new MyRpc{
+      override def myMethod(id: Int, name: String): IFuture1[MyResponse] = {
+        val response = new MyResponse
+        response.myInnerEntity = new MyInnerEntity
+        response.myInnerEntity.code = 123
+        response.myInnerEntity.message = "xxxx"
+        Future.successful(response)
       }
-    })
+
+      override def createResource(resourceName: String, body: Book): IFuture1[CreatedResponse] = {
+        val createdResponse = new CreatedResponse
+        createdResponse.result = """{"result": "created"}"""
+
+        Future.successful(createdResponse)
+      }
+    }))
 
     val rpcEntrySeq = Seq(rpcEntry)
 
     val mainController = new MainController(rpcEntrySeq)
 
-    val result: Future[play.api.mvc.Result] = mainController.rpc("/method/name/1/2").apply(FakeRequest())
+    val result: Future[play.api.mvc.Result] = mainController.rpc("/my-method/test/name/test").apply(FakeRequest())
 
-    contentAsString(result) must contain("result")
-    contentAsString(result) must contain("3")
+    contentAsString(result) must contain(""""code": 123""")
+    contentAsString(result) must contain(""""message": "xxxx"""")
 
   }
 }
