@@ -2,43 +2,16 @@ package com.thoughtworks.microbuilder.play
 
 import java.io.ByteArrayOutputStream
 
-import com.qifun.jsonStream.{JsonStreamPair, JsonStream}
-import com.qifun.jsonStream.io.{TextParser, PrettyTextPrinter}
-import com.qifun.jsonStream.rpc.{IJsonResponseHandler, ICompleteHandler1, IFuture1, IJsonService}
+import com.qifun.jsonStream.io.{PrettyTextPrinter, TextParser}
+import com.qifun.jsonStream.rpc.{IJsonResponseHandler, IJsonService}
+import com.qifun.jsonStream.{JsonStream, JsonStreamPair}
 import com.thoughtworks.microbuilder.core.{CoreSerializer, Failure => MicrobuilderFailure, IRouteConfiguration, IUriTemplate}
-import com.thoughtworks.microbuilder.play.exception.MicrobuilderException._
 import haxe.io.Output
 import play.api.http.Writeable
 import play.api.libs.ws.{WSAPI, WSRequest}
 
-import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
-
-object Implicits {
-
-  implicit def jsonStreamFutureToScalaFuture[Value](jsonStreamFuture: IFuture1[Value]): Future[Value] = {
-    val p = Promise[Value]()
-
-    jsonStreamFuture.start(new ICompleteHandler1[Value] {
-      override def onSuccess(value: Value): Unit = p success value
-
-      override def onFailure(obj: scala.Any): Unit = {
-        val failure = obj.asInstanceOf[MicrobuilderFailure]
-        //TODO： 不要使用getTag
-        failure.getTag match {
-          case "TEXT_APPLICATION_FAILURE" =>
-            p failure new TextApplicationException(haxe.root.Type.enumParameters(failure).__get(0).asInstanceOf[String])
-          case "STRUCTURAL_APPLICATION_FAILURE" =>
-            p failure new StructuralApplicationException(haxe.root.Type.enumParameters(failure).__get(0))
-          case "SERIALIZATION_FAILURE" =>
-            p failure new WrongResponseFormatException(haxe.root.Type.enumParameters(failure).__get(0).asInstanceOf[String])
-        }
-      }
-    })
-
-    p.future
-  }
-}
 
 class PlayOutgoingJsonService(urlPrefix: String, routes: IRouteConfiguration, wsAPI: WSAPI)(implicit executionContext: ExecutionContext) extends IJsonService {
 

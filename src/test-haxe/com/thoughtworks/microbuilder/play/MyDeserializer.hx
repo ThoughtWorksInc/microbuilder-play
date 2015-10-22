@@ -9,11 +9,3 @@ using com.qifun.jsonStream.Plugins;
 class MyDeserializer {
 
 }
-
-@:build(com.qifun.jsonStream.JsonSerializer.generateSerializer([
-    "com.thoughtworks.microbuilder.core.Failure",
-    "com.thoughtworks.microbuilder.play.MyModels"
-]))
-class MySerializer {
-
-}
