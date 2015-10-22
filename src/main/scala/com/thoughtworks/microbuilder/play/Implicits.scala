@@ -1,11 +1,11 @@
-package com.thoughtworks.restRpc.play
+package com.thoughtworks.microbuilder.play
 
 import com.qifun.jsonStream.rpc.{ICompleteHandler1, IFuture1}
-import com.thoughtworks.microbuilder.play.exception.MicrobuilderException.{WrongResponseFormatException, StructuralApplicationException, TextApplicationException}
-
-import scala.concurrent.{Promise, Future}
 import com.thoughtworks.microbuilder.core.{Failure => MicrobuilderFailure}
+import com.thoughtworks.microbuilder.play.exception.MicrobuilderException.{StructuralApplicationException, TextApplicationException, WrongResponseFormatException}
+
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{Future, Promise}
 import scala.util._
 
 /**

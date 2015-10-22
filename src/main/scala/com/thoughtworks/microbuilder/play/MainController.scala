@@ -1,11 +1,11 @@
-package com.thoughtworks.restRpc.callee
+package com.thoughtworks.microbuilder.play
 
 import java.io.ByteArrayOutputStream
 
 import com.qifun.jsonStream.JsonStream
 import com.qifun.jsonStream.io.PrettyTextPrinter
 import com.qifun.jsonStream.rpc.{IJsonResponseHandler, IJsonService}
-import com.thoughtworks.restRpc.core.IRouteConfiguration
+import com.thoughtworks.microbuilder.core.IRouteConfiguration
 import haxe.io.Output
 import play.api.http.Writeable
 import play.api.mvc._

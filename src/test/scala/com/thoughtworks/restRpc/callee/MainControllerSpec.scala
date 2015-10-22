@@ -3,8 +3,9 @@ package com.thoughtworks.restRpc.callee
 import com.qifun.jsonStream.JsonStream
 import com.qifun.jsonStream.io.TextParser
 import com.qifun.jsonStream.rpc.IFuture1
+import com.thoughtworks.microbuilder.play.{RpcEntry, MainController, Implicits}
 import com.thoughtworks.restRpc.core.{IRouteConfiguration, IUriTemplate}
-import com.thoughtworks.restRpc.play.Implicits.scalaFutureToJsonStreamFuture
+import Implicits.scalaFutureToJsonStreamFuture
 import com.thoughtworks.restRpc.play.{Book, CreatedResponse, MyIncomingProxyFactory, MyRpc, _}
 import haxe.root
 import org.junit.runner._

@@ -1,8 +1,8 @@
-package com.thoughtworks.restRpc.play;
+package com.thoughtworks.microbuilder.play;
 
 using com.qifun.jsonStream.Plugins;
-using com.thoughtworks.restRpc.play.MySerializer;
-using com.thoughtworks.restRpc.play.MyDeserializer;
+using com.thoughtworks.microbuilder.play.MySerializer;
+using com.thoughtworks.microbuilder.play.MyDeserializer;
 
 
 @:build(com.qifun.jsonStream.rpc.IncomingProxyFactory.generateIncomingProxyFactory([
