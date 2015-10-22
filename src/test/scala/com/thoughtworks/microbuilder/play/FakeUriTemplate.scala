@@ -1,7 +1,7 @@
-package com.thoughtworks.restRpc.play
+package com.thoughtworks.microbuilder.play
 
 import com.qifun.jsonStream.JsonStream
-import com.thoughtworks.restRpc.core.IUriTemplate
+import com.thoughtworks.microbuilder.core.IUriTemplate
 import haxe.root.Reflect
 
 class FakeUriTemplate(methodName: String, resultUrl: String, numOfUrlParams:Int) extends IUriTemplate {

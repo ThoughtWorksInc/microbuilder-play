@@ -28,17 +28,13 @@ class MainController(rpcImplementations: Seq[RpcEntry]) extends Controller {
     val promise = Promise[Result]
 
     rpcImplementations.map(rpcImplementation => {
-      println("{}{}{}")
-      println(rpcImplementation.routeConfiguration.matchUri(request.method, uri, bodyJsonStream.getOrElse(null), request.contentType.getOrElse(null)).length)
 
       rpcImplementation.routeConfiguration.matchUri(request.method, uri, bodyJsonStream.getOrElse(null), request.contentType.getOrElse(null)) match {
         case null => {
           promise.success(NotFound)
           println("null")
         }
-        case jsonStream: Array[JsonStream] => {
-
-          println(jsonStream.length)
+        case jsonStream: JsonStream => {
 
           val resp: IJsonResponseHandler = new IJsonResponseHandler {
             override def onFailure(jsonStream: JsonStream): Unit = {
@@ -69,7 +65,7 @@ class MainController(rpcImplementations: Seq[RpcEntry]) extends Controller {
             }
           }
 
-          rpcImplementation.incomingServiceProxy.apply(jsonStream(0), resp)
+          rpcImplementation.incomingServiceProxy.apply(jsonStream, resp)
         }
       }
     })
