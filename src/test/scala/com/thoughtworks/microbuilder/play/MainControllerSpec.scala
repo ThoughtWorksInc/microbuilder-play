@@ -1,8 +1,8 @@
 package com.thoughtworks.microbuilder.play
 
-import com.qifun.jsonStream.JsonStream
-import com.qifun.jsonStream.io.TextParser
-import com.qifun.jsonStream.rpc.IFuture1
+import jsonStream.JsonStream
+import jsonStream.io.TextParser
+import jsonStream.rpc.IFuture1
 import com.thoughtworks.microbuilder.core.{IRouteConfiguration, IUriTemplate}
 import com.thoughtworks.microbuilder.play.Implicits.scalaFutureToJsonStreamFuture
 import haxe.root

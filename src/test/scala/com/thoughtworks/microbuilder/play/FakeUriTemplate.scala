@@ -1,6 +1,6 @@
 package com.thoughtworks.microbuilder.play
 
-import com.qifun.jsonStream.JsonStream
+import jsonStream.JsonStream
 import com.thoughtworks.microbuilder.core.IUriTemplate
 import haxe.root.Reflect
 

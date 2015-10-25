@@ -17,8 +17,8 @@
 
 package com.thoughtworks.microbuilder.play
 
-import com.qifun.jsonStream.JsonStream
-import com.qifun.jsonStream.JsonStreamPair
+import jsonStream.JsonStream
+import jsonStream.JsonStreamPair
 
 private[play] object JsonStreamExtractor {
 

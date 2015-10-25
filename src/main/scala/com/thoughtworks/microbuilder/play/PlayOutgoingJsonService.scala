@@ -2,9 +2,9 @@ package com.thoughtworks.microbuilder.play
 
 import java.io.ByteArrayOutputStream
 
-import com.qifun.jsonStream.io.{PrettyTextPrinter, TextParser}
-import com.qifun.jsonStream.rpc.{IJsonResponseHandler, IJsonService}
-import com.qifun.jsonStream.{JsonStream, JsonStreamPair}
+import jsonStream.io.{PrettyTextPrinter, TextParser}
+import jsonStream.rpc.{IJsonResponseHandler, IJsonService}
+import jsonStream.{JsonStream, JsonStreamPair}
 import com.thoughtworks.microbuilder.core.{CoreSerializer, Failure => MicrobuilderFailure, IRouteConfiguration, IUriTemplate}
 import haxe.io.Output
 import play.api.http.Writeable
@@ -112,7 +112,7 @@ class PlayOutgoingJsonService(urlPrefix: String, routes: IRouteConfiguration, ws
     }
   }
 
-  def push(x$1: com.qifun.jsonStream.JsonStream): Unit = {
+  def push(x$1: jsonStream.JsonStream): Unit = {
   }
 
 }

@@ -1,7 +1,7 @@
 package com.thoughtworks.microbuilder.play;
 
 import com.thoughtworks.microbuilder.core.IRouteConfiguration;
-using com.qifun.jsonStream.Plugins;
+using jsonStream.Plugins;
 using com.thoughtworks.microbuilder.play.MyDeserializer;
 
 

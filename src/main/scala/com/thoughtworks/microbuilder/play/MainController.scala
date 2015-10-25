@@ -2,9 +2,9 @@ package com.thoughtworks.microbuilder.play
 
 import java.io.ByteArrayOutputStream
 
-import com.qifun.jsonStream.JsonStream
-import com.qifun.jsonStream.io.PrettyTextPrinter
-import com.qifun.jsonStream.rpc.{IJsonResponseHandler, IJsonService}
+import jsonStream.JsonStream
+import jsonStream.io.PrettyTextPrinter
+import jsonStream.rpc.{IJsonResponseHandler, IJsonService}
 import com.thoughtworks.microbuilder.core.IRouteConfiguration
 import haxe.io.Output
 import play.api.http.Writeable

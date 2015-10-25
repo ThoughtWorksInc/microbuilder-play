@@ -1,6 +1,6 @@
 package com.thoughtworks.microbuilder.play
 
-import com.qifun.jsonStream.JsonStream
+import jsonStream.JsonStream
 import org.specs2.mutable.Specification
 
 class RouteSpec extends Specification {

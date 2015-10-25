@@ -47,11 +47,3 @@ for (c <- Seq(Compile, Test)) yield {
 scalacOptions in Test += "-Yrangepos"
 
 compileOrder := CompileOrder.JavaThenScala
-
-for (c <- AllTestTargetConfigurations) yield {
-  haxeMacros in c += """com.dongxiguo.autoParser.AutoParser.BUILDER.defineMacroClass([ "com.thoughtworks.microbuilder.core.UriTemplate" ], "com.thoughtworks.microbuilder.core.UriTemplateParser")"""
-}
-
-for (c <- AllTestTargetConfigurations) yield {
-  haxeMacros in c += """com.dongxiguo.autoParser.AutoFormatter.BUILDER.defineMacroClass([ "com.thoughtworks.microbuilder.core.UriTemplate" ], "com.thoughtworks.microbuilder.core.UriTemplateFormatter")"""
-}

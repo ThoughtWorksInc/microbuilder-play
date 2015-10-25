@@ -1,11 +1,11 @@
 package com.thoughtworks.microbuilder.play;
 
-using com.qifun.jsonStream.Plugins;
+using jsonStream.Plugins;
 using com.thoughtworks.microbuilder.play.MyDeserializer;
 using com.thoughtworks.microbuilder.play.MySerializer;
 
 
-@:build(com.qifun.jsonStream.rpc.OutgoingProxyFactory.generateOutgoingProxyFactory([
+@:build(jsonStream.rpc.OutgoingProxyFactory.generateOutgoingProxyFactory([
   "com.thoughtworks.microbuilder.play.MyRpc",
   "com.thoughtworks.microbuilder.play.MyRpcWithStructuralException"
 ]))
