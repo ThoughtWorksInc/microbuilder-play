@@ -1,10 +1,10 @@
 package com.thoughtworks.microbuilder.play
 
 import jsonStream.JsonStream
-import com.thoughtworks.microbuilder.core.IUriTemplate
+import com.thoughtworks.microbuilder.core.IRouteEntry
 import haxe.root.Reflect
 
-class FakeUriTemplate(methodName: String, resultUrl: String, numOfUrlParams:Int) extends IUriTemplate {
+class FakeUriTemplate(methodName: String, resultUrl: String, numOfUrlParams:Int) extends IRouteEntry {
   override def get_method(): String = methodName
   override def render(parameters: scala.AnyRef): String = {
     for(_ <- 1 to numOfUrlParams) {

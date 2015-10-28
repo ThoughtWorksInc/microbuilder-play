@@ -13,4 +13,7 @@ interface MyRpc {
 
     @:route("POST", "/{resourceName}")
     function createResource(resourceName: String, body:Book): Future<CreatedResponse>;
+
+    // TODO: Add methods that has a @:requestContentType
+
 }

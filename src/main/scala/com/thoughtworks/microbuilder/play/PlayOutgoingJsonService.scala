@@ -5,7 +5,7 @@ import java.io.ByteArrayOutputStream
 import jsonStream.io.{PrettyTextPrinter, TextParser}
 import jsonStream.rpc.{IJsonResponseHandler, IJsonService}
 import jsonStream.{JsonStream, JsonStreamPair}
-import com.thoughtworks.microbuilder.core.{CoreSerializer, Failure => MicrobuilderFailure, IRouteConfiguration, IUriTemplate}
+import com.thoughtworks.microbuilder.core.{CoreSerializer, Failure => MicrobuilderFailure, IRouteConfiguration, IRouteEntry}
 import haxe.io.Output
 import play.api.http.Writeable
 import play.api.libs.ws.{WSAPI, WSRequest}
@@ -16,7 +16,7 @@ import scala.util.{Failure, Success}
 class PlayOutgoingJsonService(urlPrefix: String, routes: IRouteConfiguration, wsAPI: WSAPI)(implicit executionContext: ExecutionContext) extends IJsonService {
 
   def prepareWSRequest(parameters: WrappedHaxeIterator[JsonStream], pair: JsonStreamPair): WSRequest = {
-    val template: IUriTemplate = routes.nameToUriTemplate(pair.key)
+    val template: IRouteEntry = routes.nameToUriTemplate(pair.key)
     val request = wsAPI.url(urlPrefix + template.render(parameters.haxeIterator)).withMethod(template.get_method())
     val wsRequest = {
       if (parameters.hasNext) {

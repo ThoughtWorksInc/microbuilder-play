@@ -4,7 +4,7 @@ import java.util.concurrent.TimeUnit.SECONDS
 
 import com.github.dreamhead.moco.{Moco, _}
 import com.ning.http.client.AsyncHttpClientConfig
-import com.thoughtworks.microbuilder.core.{IRouteConfiguration, IUriTemplate}
+import com.thoughtworks.microbuilder.core.{IRouteConfiguration, IRouteEntry}
 import com.thoughtworks.microbuilder.play.Implicits._
 import com.thoughtworks.microbuilder.play.exception.MicrobuilderException.{TextApplicationException, NativeException, WrongResponseFormatException}
 import org.junit.runner.RunWith

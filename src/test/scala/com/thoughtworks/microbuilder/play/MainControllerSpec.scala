@@ -3,7 +3,7 @@ package com.thoughtworks.microbuilder.play
 import jsonStream.JsonStream
 import jsonStream.io.TextParser
 import jsonStream.rpc.IFuture1
-import com.thoughtworks.microbuilder.core.{IRouteConfiguration, IUriTemplate}
+import com.thoughtworks.microbuilder.core.{IRouteConfiguration, IRouteEntry}
 import com.thoughtworks.microbuilder.play.Implicits.scalaFutureToJsonStreamFuture
 import haxe.root
 import org.specs2.mutable._
@@ -13,7 +13,7 @@ import play.api.test.Helpers._
 import scala.concurrent.Future
 
 class RouteConfiguration extends IRouteConfiguration {
-  override def nameToUriTemplate(name: String): IUriTemplate = throw new Exception("not implemented")
+  override def nameToUriTemplate(name: String): IRouteEntry = throw new Exception("not implemented")
 
   override def __hx_deleteField(field: String): Boolean = ???
 
