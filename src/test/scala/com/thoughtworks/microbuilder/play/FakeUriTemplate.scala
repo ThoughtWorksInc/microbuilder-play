@@ -13,7 +13,5 @@ class FakeUriTemplate(methodName: String, resultUrl: String, numOfUrlParams:Int)
     resultUrl
   }
 
-  override def parseUri(uri: String): Array[JsonStream] = throw new Exception("didn't implemented")
-
   override def get_requestContentType(): String = throw new Exception("didn't implemented")
 }
