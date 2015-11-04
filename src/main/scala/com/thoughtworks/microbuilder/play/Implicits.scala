@@ -2,7 +2,7 @@ package com.thoughtworks.microbuilder.play
 
 import jsonStream.rpc.{ICompleteHandler1, IFuture1}
 import com.thoughtworks.microbuilder.core.{Failure => MicrobuilderFailure}
-import com.thoughtworks.microbuilder.play.exception.MicrobuilderException.{StructuralApplicationException, TextApplicationException, WrongResponseFormatException}
+import com.thoughtworks.microbuilder.play.exception.MicrobuilderException._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, Promise}
@@ -29,6 +29,8 @@ object Implicits {
             p failure new StructuralApplicationException(haxe.root.Type.enumParameters(failure).__get(0))
           case "SERIALIZATION_FAILURE" =>
             p failure new WrongResponseFormatException(haxe.root.Type.enumParameters(failure).__get(0).asInstanceOf[String])
+          case "NATIVE_FAILURE" =>
+            p failure new NativeException(haxe.root.Type.enumParameters(failure).__get(0).asInstanceOf[String])
         }
       }
     })
