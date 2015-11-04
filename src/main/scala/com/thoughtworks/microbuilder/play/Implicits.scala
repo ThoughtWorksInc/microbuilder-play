@@ -21,16 +21,17 @@ object Implicits {
 
       override def onFailure(obj: scala.Any): Unit = {
         val failure = obj.asInstanceOf[MicrobuilderFailure]
+        val params = haxe.root.Type.enumParameters(failure)
         //TODO： 不要使用getTag
         failure.getTag match {
           case "TEXT_APPLICATION_FAILURE" =>
-            p failure new TextApplicationException(haxe.root.Type.enumParameters(failure).__get(0).asInstanceOf[String])
+            p failure new TextApplicationException(params.__get(0).asInstanceOf[String], params.__get(1).asInstanceOf[Int])
           case "STRUCTURAL_APPLICATION_FAILURE" =>
-            p failure new StructuralApplicationException(haxe.root.Type.enumParameters(failure).__get(0))
+            p failure new StructuralApplicationException(params.__get(0), params.__get(1).asInstanceOf[Int])
           case "SERIALIZATION_FAILURE" =>
-            p failure new WrongResponseFormatException(haxe.root.Type.enumParameters(failure).__get(0).asInstanceOf[String])
+            p failure new WrongResponseFormatException(params.__get(0).asInstanceOf[String])
           case "NATIVE_FAILURE" =>
-            p failure new NativeException(haxe.root.Type.enumParameters(failure).__get(0).asInstanceOf[String])
+            p failure new NativeException(params.__get(0).asInstanceOf[String])
         }
       }
     })
@@ -46,11 +47,11 @@ object Implicits {
           case Failure(e) => {
             e match {
               // TODO: NativeException
-              case StructuralApplicationException(data) => {
-                handler.onFailure(MicrobuilderFailure.STRUCTURAL_APPLICATION_FAILURE(data))
+              case StructuralApplicationException(data, code) => {
+                handler.onFailure(MicrobuilderFailure.STRUCTURAL_APPLICATION_FAILURE(data, code))
               }
-              case TextApplicationException(reason) => {
-                handler.onFailure(MicrobuilderFailure.TEXT_APPLICATION_FAILURE(reason))
+              case TextApplicationException(reason, code) => {
+                handler.onFailure(MicrobuilderFailure.TEXT_APPLICATION_FAILURE(reason, code))
               }
             }
           }
