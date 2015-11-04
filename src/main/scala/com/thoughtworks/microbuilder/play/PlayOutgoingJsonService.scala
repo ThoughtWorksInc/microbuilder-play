@@ -60,7 +60,7 @@ class PlayOutgoingJsonService(urlPrefix: String, routes: IRouteConfiguration, ws
           }
         case Success(response) =>
           if (routes.get_failureClassName == null) {
-            val textFailure = CoreSerializer.dynamicSerialize(haxe.root.ValueType.TEnum(classOf[MicrobuilderFailure]), MicrobuilderFailure.TEXT_APPLICATION_FAILURE(response.body))
+            val textFailure = CoreSerializer.dynamicSerialize(haxe.root.ValueType.TEnum(classOf[MicrobuilderFailure]), MicrobuilderFailure.TEXT_APPLICATION_FAILURE(response.body, response.status))
             responseHandler.onFailure(JsonStream.OBJECT(Iterator(textFailure)))
           } else {
             withSerializationExceptionHandling(responseHandler, response.body) { () =>
@@ -77,6 +77,9 @@ class PlayOutgoingJsonService(urlPrefix: String, routes: IRouteConfiguration, ws
                                   "failure", JsonStream.OBJECT(
                                     Iterator(new JsonStreamPair(routes.get_failureClassName, TextParser.parseString(response.body)))
                                   )
+                                ),
+                                new JsonStreamPair(
+                                  "code", JsonStream.INT32(response.status)
                                 )
                               )
                             )

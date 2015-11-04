@@ -31,27 +31,24 @@ class RpcOutgoingTest extends Specification with SpecMockito with BeforeAll with
 
   var theServer: Runner = null
 
+  val configuration: IRouteConfiguration = MyRouteConfigurationFactory.routeConfiguration_com_thoughtworks_microbuilder_play_MyRpc
+
+  val myRpc: MyRpc = MyOutgoingProxyFactory.outgoingProxy_com_thoughtworks_microbuilder_play_MyRpc(
+    new PlayOutgoingJsonService("http://localhost:8090", configuration, mockWsApi)
+  )
+
   "This is a specification of using microbuilder-play tools to make http requests".txt
 
   "Should throw TextApplicationException with TEXT_APPLICATION_FAILURE when structuralFailure is not configured" >> {
-    val configuration: IRouteConfiguration = MyRouteConfigurationFactory.routeConfiguration_com_thoughtworks_microbuilder_play_MyRpc
-
-    val myRpc: MyRpc = MyOutgoingProxyFactory.outgoingProxy_com_thoughtworks_microbuilder_play_MyRpc(
-      new PlayOutgoingJsonService("http://localhost:8090", configuration, mockWsApi)
-    )
-
     Await.result(myRpc.myMethod(1, "failure"), Duration(5, SECONDS)) must throwA.like {
-      case TextApplicationException(textError) => textError === "server error"
+      case TextApplicationException(textError, code) =>{
+        textError === "server error"
+        code === 500
+      }
     }
   }
 
   "Should convert myMethod to http get request and get the response" >> {
-    val configuration: IRouteConfiguration = MyRouteConfigurationFactory.routeConfiguration_com_thoughtworks_microbuilder_play_MyRpc
-
-    val myRpc: MyRpc = MyOutgoingProxyFactory.outgoingProxy_com_thoughtworks_microbuilder_play_MyRpc(
-      new PlayOutgoingJsonService("http://localhost:8090", configuration, mockWsApi)
-    )
-
     val response = Await.result(myRpc.myMethod(1, "abc"), Duration(5, SECONDS))
 
     response.myInnerEntity.message === "this is a message"
@@ -59,24 +56,12 @@ class RpcOutgoingTest extends Specification with SpecMockito with BeforeAll with
   }
 
   "Should convert createResource to http post request and get created response" >> {
-    val configuration: IRouteConfiguration = MyRouteConfigurationFactory.routeConfiguration_com_thoughtworks_microbuilder_play_MyRpc
-
-    val myRpc: MyRpc = MyOutgoingProxyFactory.outgoingProxy_com_thoughtworks_microbuilder_play_MyRpc(
-      new PlayOutgoingJsonService("http://localhost:8090", configuration, mockWsApi)
-    )
-
     val response = Await.result(myRpc.createResource("books", new Book(1, "name")), Duration(5, SECONDS))
 
     response.result === "created"
   }
 
   "Should throw native exception if the response is not legal json" >> {
-    val configuration: IRouteConfiguration = MyRouteConfigurationFactory.routeConfiguration_com_thoughtworks_microbuilder_play_MyRpc
-
-    val myRpc: MyRpc = MyOutgoingProxyFactory.outgoingProxy_com_thoughtworks_microbuilder_play_MyRpc(
-      new PlayOutgoingJsonService("http://localhost:8090", configuration, mockWsApi)
-    )
-
     Await.result(myRpc.myMethod(1, "wrong_json"), Duration(5, SECONDS)) must throwA.like {
       case WrongResponseFormatException(textError) => textError === "Wrong Json format: not a json"
     }
