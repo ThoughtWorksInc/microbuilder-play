@@ -82,7 +82,7 @@ private[play] object JsonStreamExtractor {
 
   object Int32 {
 
-    final def unapply(jsonStream: JsonStream): Option[Double] = {
+    final def unapply(jsonStream: JsonStream): Option[Int] = {
       haxe.root.Type.enumIndex(jsonStream) match {
         case JsonStreamInt32Index => {
           Some(haxe.root.Type.enumParameters(jsonStream).__a(0).asInstanceOf[Int])

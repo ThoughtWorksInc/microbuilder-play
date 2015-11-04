@@ -4,9 +4,9 @@ import java.util.concurrent.TimeUnit.SECONDS
 
 import com.github.dreamhead.moco.{Moco, _}
 import com.ning.http.client.AsyncHttpClientConfig
-import com.thoughtworks.microbuilder.core.{IRouteConfiguration, IRouteEntry}
+import com.thoughtworks.microbuilder.core.IRouteConfiguration
 import com.thoughtworks.microbuilder.play.Implicits._
-import com.thoughtworks.microbuilder.play.exception.MicrobuilderException.{TextApplicationException, NativeException, WrongResponseFormatException}
+import com.thoughtworks.microbuilder.play.exception.MicrobuilderException.{TextApplicationException, WrongResponseFormatException}
 import org.junit.runner.RunWith
 import org.specs2.mock.{Mockito => SpecMockito}
 import org.specs2.mutable.Specification
@@ -41,7 +41,7 @@ class RpcOutgoingTest extends Specification with SpecMockito with BeforeAll with
     )
 
     Await.result(myRpc.myMethod(1, "failure"), Duration(5, SECONDS)) must throwA.like {
-      case TextApplicationException(textError) => textError === "server error"
+      case TextApplicationException(textError, _) => textError === "server error"
     }
   }
 
