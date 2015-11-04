@@ -46,7 +46,7 @@ class PlayOutgoingJsonService(urlPrefix: String, routes: IRouteConfiguration, ws
     } catch {
       case e: Exception =>
         val serializationFailure = CoreSerializer.dynamicSerialize(haxe.root.ValueType.TEnum(classOf[MicrobuilderFailure]),
-                                                                   MicrobuilderFailure.SERIALIZATION_FAILURE("Wrong Json format: " + body))
+          MicrobuilderFailure.SERIALIZATION_FAILURE("Wrong Json format: " + body))
         responseHandler.onFailure(JsonStream.OBJECT(Iterator(serializationFailure)))
     }
   }
@@ -60,7 +60,9 @@ class PlayOutgoingJsonService(urlPrefix: String, routes: IRouteConfiguration, ws
           }
         case Success(response) =>
           if (routes.get_failureClassName == null) {
-            val textFailure = CoreSerializer.dynamicSerialize(haxe.root.ValueType.TEnum(classOf[MicrobuilderFailure]), MicrobuilderFailure.TEXT_APPLICATION_FAILURE(response.body, response.status))
+            val textFailure = CoreSerializer.dynamicSerialize(
+              haxe.root.ValueType.TEnum(classOf[MicrobuilderFailure]),
+              MicrobuilderFailure.TEXT_APPLICATION_FAILURE(response.body, response.status))
             responseHandler.onFailure(JsonStream.OBJECT(Iterator(textFailure)))
           } else {
             withSerializationExceptionHandling(responseHandler, response.body) { () =>
@@ -79,7 +81,7 @@ class PlayOutgoingJsonService(urlPrefix: String, routes: IRouteConfiguration, ws
                                   )
                                 ),
                                 new JsonStreamPair(
-                                  "code", JsonStream.INT32(response.status)
+                                  "status", JsonStream.INT32(response.status)
                                 )
                               )
                             )

@@ -8,10 +8,14 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, Promise}
 import scala.util._
 
-/**
- * Created by zwshao on 10/12/15.
- */
 object Implicits {
+
+  private val FailureConstructors = haxe.root.Type.getEnumConstructs(classOf[MicrobuilderFailure])
+
+  private val TextApplicationFailureIndex: Int = FailureConstructors.indexOf("TEXT_APPLICATION_FAILURE", 0)
+  private val StructuralApplicationFailureIndex: Int = FailureConstructors.indexOf("STRUCTURAL_APPLICATION_FAILURE", 0)
+  private val SerializationFailureIndex: Int = FailureConstructors.indexOf("SERIALIZATION_FAILURE", 0)
+
 
   implicit def jsonStreamFutureToScalaFuture[Value](jsonStreamFuture: IFuture1[Value]): Future[Value] = {
     val p = Promise[Value]()
@@ -21,17 +25,21 @@ object Implicits {
 
       override def onFailure(obj: scala.Any): Unit = {
         val failure = obj.asInstanceOf[MicrobuilderFailure]
-        val params = haxe.root.Type.enumParameters(failure)
-        //TODO： 不要使用getTag
-        failure.getTag match {
-          case "TEXT_APPLICATION_FAILURE" =>
-            p failure new TextApplicationException(params.__get(0).asInstanceOf[String], params.__get(1).asInstanceOf[Int])
-          case "STRUCTURAL_APPLICATION_FAILURE" =>
-            p failure new StructuralApplicationException(params.__get(0), params.__get(1).asInstanceOf[Int])
-          case "SERIALIZATION_FAILURE" =>
-            p failure new WrongResponseFormatException(params.__get(0).asInstanceOf[String])
-          case "NATIVE_FAILURE" =>
-            p failure new NativeException(params.__get(0).asInstanceOf[String])
+        haxe.root.Type.enumIndex(obj) match {
+          case TextApplicationFailureIndex =>
+            p failure new TextApplicationException(
+              haxe.root.Type.enumParameters(failure).__get(0).asInstanceOf[String],
+              haxe.root.Type.enumParameters(failure).__get(1).asInstanceOf[Int]
+            )
+          case StructuralApplicationFailureIndex =>
+            p failure new StructuralApplicationException(
+              haxe.root.Type.enumParameters(failure).__get(0),
+              haxe.root.Type.enumParameters(failure).__get(1).asInstanceOf[Int]
+            )
+          case SerializationFailureIndex =>
+            p failure new WrongResponseFormatException(
+              haxe.root.Type.enumParameters(failure).__get(0).asInstanceOf[String]
+            )
         }
       }
     })
@@ -47,11 +55,11 @@ object Implicits {
           case Failure(e) => {
             e match {
               // TODO: NativeException
-              case StructuralApplicationException(data, code) => {
-                handler.onFailure(MicrobuilderFailure.STRUCTURAL_APPLICATION_FAILURE(data, code))
+              case StructuralApplicationException(data, status) => {
+                handler.onFailure(MicrobuilderFailure.STRUCTURAL_APPLICATION_FAILURE(data, status))
               }
-              case TextApplicationException(reason, code) => {
-                handler.onFailure(MicrobuilderFailure.TEXT_APPLICATION_FAILURE(reason, code))
+              case TextApplicationException(reason, status) => {
+                handler.onFailure(MicrobuilderFailure.TEXT_APPLICATION_FAILURE(reason, status))
               }
             }
           }
