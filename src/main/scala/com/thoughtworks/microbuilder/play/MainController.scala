@@ -2,12 +2,12 @@ package com.thoughtworks.microbuilder.play
 
 import java.io.ByteArrayOutputStream
 
-import com.thoughtworks.microbuilder.core.{MatchResult, IRouteConfiguration}
+import com.thoughtworks.microbuilder.core.{IRouteConfiguration, MatchResult}
 import haxe.io.Output
 import haxe.lang.HaxeException
-import jsonStream.{JsonDeserializer, JsonStream}
 import jsonStream.io.PrettyTextPrinter
 import jsonStream.rpc.{IJsonResponseHandler, IJsonService}
+import jsonStream.{JsonStream, JsonStreamPair}
 import play.api.http.Writeable
 import play.api.mvc._
 
@@ -38,77 +38,50 @@ class MainController(rpcImplementations: Seq[RpcEntry]) extends Controller {
           val jsonStream = matchResult.rpcData
           val resp: IJsonResponseHandler = new IJsonResponseHandler {
             override def onFailure(jsonStream: JsonStream): Unit = {
-              play.api.Logger.error(JsonDeserializer.deserializeRaw(jsonStream).toString)
+
               /*
               {
+                com.thoughtworks.microbuilder.core.Failure : {
+                  STRUCTURAL_APPLICATION_FAILURE : {
+                    failure : {
+                        String : app structural exception
+                    },
+                    status : 507
+                  }
+                }
+              }
+               */
+              /*{
                 com.thoughtworks.microbuilder.core.Failure : {
                   TEXT_APPLICATION_FAILURE : {
                     message : app exception,
                     status : 507
                   }
                 }
-              }
-                  */
+              }*/
               jsonStream match {
                 case JsonStreamExtractor.Object(pairs) =>
+
                   if (pairs.hasNext) {
                     val pair = pairs.next()
-                    pair.key match {
-                      case "TEXT_APPLICATION_FAILURE" =>
-                        pair.value match {
-                          case JsonStreamExtractor.Object(subpairs) =>
-                            var messageOption: Option[String] = None
-                            var statusOption: Option[Int] = None
-                            for (subpair <- subpairs) {
-                              subpair.key match {
-                                case "message" =>
-                                  subpair.value match {
-                                    case JsonStreamExtractor.String(messageValue) =>
-                                      messageOption = Some(messageValue)
-                                  }
-                                case "status" =>
-                                  subpair.value match {
-                                    case JsonStreamExtractor.Int32(statusValue) =>
-                                      statusOption = Some(statusValue)
-                                    case JsonStreamExtractor.Number(statusValue) =>
-                                      statusOption = Some(statusValue.toInt)
-                                  }
-                              }
-                            }
-                            val Some(status) = statusOption
-                            val Some(message) = messageOption
-                            promise.success(new Status(status)(message))
+
+                    pair.value match {
+                      case JsonStreamExtractor.Object(appErrorInfoPair) =>
+                        if (appErrorInfoPair.hasNext) {
+                          val appErrorInfo = appErrorInfoPair.next()
+                          appErrorInfo.key match {
+                            case "TEXT_APPLICATION_FAILURE" =>
+                              writeOutTextErrorInfo(promise, appErrorInfo)
+                            case "STRUCTURAL_APPLICATION_FAILURE" =>
+                              writeOutTextErrorInfo(promise, appErrorInfo)
+                            case _ =>
+                              throw new IllegalStateException("failure must contain one key/value pair.")
+                          }
+                        } else {
+                          throw new IllegalStateException("failure must contain one key/value pair.")
                         }
-                      case "STRUCTURAL_APPLICATION_FAILURE" =>
-                        pair.value match {
-                          case JsonStreamExtractor.Object(subpairs) =>
-                            var failureOption: Option[ByteArrayOutputStream] = None
-                            var statusOption: Option[Int] = None
-                            for (subpair <- subpairs) {
-                              subpair.key match {
-                                case "failure" =>
-                                  val byteStream = new ByteArrayOutputStream()
-                                  PrettyTextPrinter.print(new Output {
-                                    override def writeByte(b: Int) = {
-                                      byteStream.write(b)
-                                    }
-                                  }, jsonStream, 0)
-                                  Some(byteStream)
-                                case "status" =>
-                                  subpair.value match {
-                                    case JsonStreamExtractor.Int32(statusValue) =>
-                                      statusOption = Some(statusValue)
-                                    case JsonStreamExtractor.Number(statusValue) =>
-                                      statusOption = Some(statusValue.toInt)
-                                  }
-                              }
-                            }
-                            val Some(status) = statusOption
-                            val Some(byteStream) = failureOption
-                            promise.success(new Status(status)(byteStream)(new Writeable[ByteArrayOutputStream]({ jsonStream =>
-                              byteStream.toByteArray
-                            }, Some(rpcImplementation.routeConfiguration.get_failureResponseContentType))))
-                        }
+                      case _ =>
+                        throw new IllegalStateException("failure must contain one key/value pair.")
                     }
                   } else {
                     throw new IllegalStateException("failure must contain one key/value pair.")
@@ -147,5 +120,43 @@ class MainController(rpcImplementations: Seq[RpcEntry]) extends Controller {
     })
 
     promise.future
+  }
+  
+  def writeOutTextErrorInfo(promise: Promise[Result], appErrorInfo: JsonStreamPair): promise.type = {
+    appErrorInfo.value match {
+      case JsonStreamExtractor.Object(subPairs) =>
+        var messageOption: Option[String] = None
+        var statusOption: Option[Int] = None
+        for (subPair <- subPairs) {
+          subPair.key match {
+            case "message" =>
+              subPair.value match {
+                case JsonStreamExtractor.String(messageValue) =>
+                  messageOption = Some(messageValue)
+              }
+            case "status" =>
+              subPair.value match {
+                case JsonStreamExtractor.Int32(statusValue) =>
+                  statusOption = Some(statusValue)
+                case JsonStreamExtractor.Number(statusValue) =>
+                  statusOption = Some(statusValue.toInt)
+              }
+            case "failure" =>
+              subPair.value match {
+                case JsonStreamExtractor.Object(messageValue) =>
+                  if(messageValue.hasNext){
+                    val failureValue = messageValue.next()
+                    failureValue.value match {
+                      case JsonStreamExtractor.String(failureString) =>
+                        messageOption = Some(failureString)
+                    }
+                  }
+              }
+          }
+        }
+        val Some(status) = statusOption
+        val Some(message) = messageOption
+        promise.success(new Status(status)(message))
+    }
   }
 }

@@ -1,6 +1,5 @@
 package com.thoughtworks.microbuilder.play
 
-import jsonStream.JsonStream
 import com.thoughtworks.microbuilder.core.IRouteEntry
 import haxe.root.Reflect
 
@@ -14,4 +13,6 @@ class FakeUriTemplate(methodName: String, resultUrl: String, numOfUrlParams:Int)
   }
 
   override def get_requestContentType(): String = throw new Exception("didn't implemented")
+
+  override def get_responseContentType(): String = ???
 }

@@ -36,7 +36,7 @@ class MainControllerSpec extends Specification {
 
       val mainController = new MainController(rpcEntrySeq)
 
-      val result: Future[play.api.mvc.Result] = mainController.rpc("/my-method/id/123/name/test").apply(FakeRequest())
+      val result: Future[play.api.mvc.Result] = mainController.rpc("/my-method/123/name/test").apply(FakeRequest())
 
       contentAsString(result) must contain( """"code": 123""")
       contentAsString(result) must contain( """"message": "xxxx"""")
