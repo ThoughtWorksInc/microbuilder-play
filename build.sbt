@@ -1,6 +1,6 @@
 enablePlugins(HaxeJavaPlugin)
 
-organization := "com.thoughtworks"
+organization := "com.thoughtworks.microbuilder"
 
 name := "microbuilder-play"
 
