@@ -12,9 +12,9 @@ libraryDependencies += "org.specs2" %% "specs2-core" % "3.6.4" % Test
 
 libraryDependencies += "com.typesafe.play" %% "play-ws" % "2.4.2"
 
-libraryDependencies += "com.thoughtworks.microbuilder" %% "json-stream" % "2.0.0"% HaxeJava classifier "haxe-java"
+libraryDependencies += "com.thoughtworks.microbuilder" %% "json-stream" % "2.0.3"% HaxeJava classifier "haxe-java"
 
-libraryDependencies += "com.thoughtworks.microbuilder" %% "json-stream" % "2.0.0"% Provided
+libraryDependencies += "com.thoughtworks.microbuilder" %% "json-stream" % "2.0.3"% Provided
 
 libraryDependencies += "com.qifun" %% "haxe-scala-stm" % "0.1.4" % HaxeJava classifier "haxe-java"
 
