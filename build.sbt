@@ -1,7 +1,5 @@
 enablePlugins(HaxeJavaPlugin)
 
-disablePlugins(HaxeCSharpPlugin)
-
 organization := "com.thoughtworks"
 
 name := "microbuilder-play"
@@ -47,3 +45,49 @@ for (c <- Seq(Compile, Test)) yield {
 scalacOptions in Test += "-Yrangepos"
 
 compileOrder := CompileOrder.JavaThenScala
+
+crossScalaVersions := Seq("2.10.6", "2.11.7")
+
+developers := List(
+  Developer(
+    "Atry",
+    "杨博 (Yang Bo)",
+    "pop.atry@gmail.com",
+    url("https://github.com/Atry")
+  )
+)
+
+
+homepage := Some(url(s"https://github.com/ThoughtWorksInc/${name.value}"))
+
+startYear := Some(2015)
+
+releasePublishArtifactsAction := PgpKeys.publishSigned.value
+
+import ReleaseTransformations._
+
+releaseProcess := Seq[ReleaseStep](
+  checkSnapshotDependencies,
+  inquireVersions,
+  runClean,
+  runTest,
+  setReleaseVersion,
+  commitReleaseVersion,
+  tagRelease,
+  publishArtifacts,
+  setNextVersion,
+  commitNextVersion,
+  releaseStepCommand("sonatypeRelease"),
+  pushChanges
+)
+
+releaseUseGlobalVersion := false
+
+releaseCrossBuild := true
+
+scmInfo := Some(ScmInfo(
+  url(s"https://github.com/ThoughtWorksInc/${name.value}"),
+  s"scm:git:git://github.com/ThoughtWorksInc/${name.value}.git",
+  Some(s"scm:git:git@github.com:ThoughtWorksInc/${name.value}.git")))
+
+licenses += "Apache" -> url("http://www.apache.org/licenses/LICENSE-2.0")
