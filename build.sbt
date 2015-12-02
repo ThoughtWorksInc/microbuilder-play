@@ -102,3 +102,13 @@ scmInfo := Some(ScmInfo(
   Some(s"scm:git:git@github.com:ThoughtWorksInc/${name.value}.git")))
 
 licenses += "Apache" -> url("http://www.apache.org/licenses/LICENSE-2.0")
+
+
+
+for (c <- AllTestTargetConfigurations) yield {
+  haxeMacros in c += """autoParser.AutoParser.BUILDER.defineMacroClass([ "com.thoughtworks.microbuilder.core.UriTemplate" ], "com.thoughtworks.microbuilder.core.UriTemplateParser")"""
+}
+
+for (c <- AllTestTargetConfigurations) yield {
+  haxeMacros in c += """autoParser.AutoFormatter.BUILDER.defineMacroClass([ "com.thoughtworks.microbuilder.core.UriTemplate" ], "com.thoughtworks.microbuilder.core.UriTemplateFormatter")"""
+}
