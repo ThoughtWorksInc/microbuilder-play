@@ -34,8 +34,14 @@ libraryDependencies += "de.leanovate.play-mockws" %% "play-mockws" % "2.4.0" % T
 
 libraryDependencies += "com.typesafe.play" %% "play-specs2" % "2.4.2" % Test
 
+val haxelibs = Map(
+  "microbuilder-core" -> DependencyVersion.SpecificVersion("0.1.0")
+)
+
+haxelibDependencies ++= haxelibs
+
 for (c <- Seq(Compile, Test)) yield {
-  haxeOptions in c ++= Seq("-lib", "continuation")
+  haxeOptions in c ++= haxelibOptions(haxelibs)
 }
 
 for (c <- Seq(Compile, Test)) yield {
