@@ -63,7 +63,7 @@ class RpcOutgoingTest extends Specification with SpecMockito with BeforeAll with
 
   "Should throw native exception if the response is not legal json" >> {
     Await.result(myRpc.myMethod(1, "wrong_json"), Duration(5, SECONDS)) must throwA.like {
-      case WrongResponseFormatException(textError) => textError === "Wrong Json format: not a json"
+      case WrongResponseFormatException(textError) => textError === "Wrong JSON format: not a JSON"
     }
   }
 
@@ -78,7 +78,7 @@ class RpcOutgoingTest extends Specification with SpecMockito with BeforeAll with
           }""")
 
     server.get(Moco.by(Moco.uri("/my-method/1/name/failure"))).response(Moco.`with`(Moco.text("server error")), Moco.status(500))
-    server.get(Moco.by(Moco.uri("/my-method/1/name/wrong_json"))).response(Moco.`with`(Moco.text("not a json")), Moco.status(200))
+    server.get(Moco.by(Moco.uri("/my-method/1/name/wrong_json"))).response(Moco.`with`(Moco.text("not a JSON")), Moco.status(200))
 
     server.post(Moco.by(Moco.uri("/books"))).response(
       """

@@ -46,7 +46,7 @@ class PlayOutgoingJsonService(urlPrefix: String, routes: IRouteConfiguration, ws
     } catch {
       case e: Exception =>
         val serializationFailure = CoreSerializer.dynamicSerialize(haxe.root.ValueType.TEnum(classOf[MicrobuilderFailure]),
-          MicrobuilderFailure.SERIALIZATION_FAILURE("Wrong Json format: " + body))
+          MicrobuilderFailure.SERIALIZATION_FAILURE("Wrong JSON format: " + body))
         responseHandler.onFailure(JsonStream.OBJECT(Iterator(serializationFailure)))
     }
   }

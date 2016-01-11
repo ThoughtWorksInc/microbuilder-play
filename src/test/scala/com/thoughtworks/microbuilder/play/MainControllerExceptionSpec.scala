@@ -1,9 +1,13 @@
 package com.thoughtworks.microbuilder.play
 
+import java.awt.print.Book
+
 import com.thoughtworks.microbuilder.play.Implicits.scalaFutureToJsonStreamFuture
 import com.thoughtworks.microbuilder.play.exception.MicrobuilderException.{StructuralApplicationException, TextApplicationException}
 import jsonStream.rpc.IFuture1
 import org.specs2.mutable._
+import play.api.libs.json.JsObject
+import play.api.libs.json.JsString
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
@@ -35,7 +39,7 @@ class MainControllerExceptionSpec extends Specification {
 
       val rpcEntrySeq = Seq(rpcEntry)
 
-      val mainController = new MainController(rpcEntrySeq)
+      val mainController = new RpcController(rpcEntrySeq)
 
       val result: Future[play.api.mvc.Result] = mainController.rpc("/my-method/test/name/test").apply(FakeRequest())
 
@@ -62,7 +66,7 @@ class MainControllerExceptionSpec extends Specification {
 
       val rpcEntrySeq = Seq(rpcEntry)
 
-      val mainController = new MainController(rpcEntrySeq)
+      val mainController = new RpcController(rpcEntrySeq)
 
       val result: Future[play.api.mvc.Result] = mainController.rpc("/my-method/12345/name/test").apply(FakeRequest())
 
@@ -73,28 +77,23 @@ class MainControllerExceptionSpec extends Specification {
 
   "app error" >> {
     "should return an app error" >> {
-      lazy val routeConfiguration = MyRouteConfigurationFactory.routeConfiguration_com_thoughtworks_microbuilder_play_MyRpc()
+      lazy val routeConfiguration = MyRouteConfigurationFactory.routeConfiguration_com_thoughtworks_microbuilder_play_MyRpcWithStructuralException()
 
-      val rpcEntry = new RpcEntry(routeConfiguration, MyIncomingProxyFactory.incomingProxy_com_thoughtworks_microbuilder_play_MyRpc(new MyRpc {
+      val rpcEntry = new RpcEntry(routeConfiguration, MyIncomingProxyFactory.incomingProxy_com_thoughtworks_microbuilder_play_MyRpcWithStructuralException(new MyRpcWithStructuralException {
         override def myMethod(id: Int, name: String): IFuture1[MyResponse] = {
-          Future.failed(new StructuralApplicationException("app structural exception", INSUFFICIENT_STORAGE))
-        }
-
-        override def createResource(resourceName: String, body: Book): IFuture1[CreatedResponse] = {
-          val createdResponse = new CreatedResponse
-          createdResponse.result = """{"result": "created"}"""
-
-          Future.successful(createdResponse)
+          val failure = new GeneralFailure()
+          failure.errorMsg = "my error message"
+          Future.failed(new StructuralApplicationException(failure, INSUFFICIENT_STORAGE))
         }
       }))
 
       val rpcEntrySeq = Seq(rpcEntry)
 
-      val mainController = new MainController(rpcEntrySeq)
+      val mainController = new RpcController(rpcEntrySeq)
 
       val result: Future[play.api.mvc.Result] = mainController.rpc("/my-method/12345/name/test").apply(FakeRequest())
 
-      contentAsString(result) must equalTo("app structural exception")
+      contentAsJson(result) must equalTo(JsObject(Map("errorMsg" -> JsString("my error message"))))
       status(result) must equalTo(INSUFFICIENT_STORAGE)
     }
   }

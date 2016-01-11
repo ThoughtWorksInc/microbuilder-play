@@ -6,6 +6,7 @@ using com.thoughtworks.microbuilder.play.MyDeserializer;
 
 
 @:build(jsonStream.rpc.IncomingProxyFactory.generateIncomingProxyFactory([
-  "com.thoughtworks.microbuilder.play.MyRpc"
+  "com.thoughtworks.microbuilder.play.MyRpc",
+  "com.thoughtworks.microbuilder.play.MyRpcWithStructuralException"
 ]))
 class MyIncomingProxyFactory {}

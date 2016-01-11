@@ -49,14 +49,14 @@ class RpcOutgoingWithFailureTest extends Specification with SpecMockito with Bef
   "Should throw WrongResponseFormatException if json is not correct " >> {
     Await.result(myRpc.myMethod(1, "wrong-json"), Duration(5, SECONDS)) must (throwA like {
       case WrongResponseFormatException(errorMsg) =>
-        errorMsg must equalTo("Wrong Json format: not a json")
+        errorMsg must equalTo("Wrong JSON format: not a JSON")
     })
   }
 
   def beforeAll() {
     val server = Moco.httpServer(8091)
     server.get(Moco.by(Moco.uri("/my-method/1/name/failure"))).response(Moco.`with`(Moco.text("{\"errorMsg\":\"not found\"}")), Moco.status(404))
-    server.get(Moco.by(Moco.uri("/my-method/1/name/wrong-json"))).response(Moco.`with`(Moco.text("not a json")), Moco.status(200))
+    server.get(Moco.by(Moco.uri("/my-method/1/name/wrong-json"))).response(Moco.`with`(Moco.text("not a JSON")), Moco.status(200))
 
     theServer = Runner.runner(server)
     theServer.start()

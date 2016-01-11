@@ -34,7 +34,7 @@ class MainControllerSpec extends Specification {
 
       val rpcEntrySeq = Seq(rpcEntry)
 
-      val mainController = new MainController(rpcEntrySeq)
+      val mainController = new RpcController(rpcEntrySeq)
 
       val result: Future[play.api.mvc.Result] = mainController.rpc("/my-method/123/name/test").apply(FakeRequest())
 
