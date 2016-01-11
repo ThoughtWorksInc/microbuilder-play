@@ -1,7 +1,5 @@
 package com.thoughtworks.microbuilder.play
 
-import java.awt.print.Book
-
 import com.thoughtworks.microbuilder.play.Implicits.scalaFutureToJsonStreamFuture
 import com.thoughtworks.microbuilder.play.exception.MicrobuilderException.{StructuralApplicationException, TextApplicationException}
 import jsonStream.rpc.IFuture1
@@ -47,8 +45,8 @@ class MainControllerExceptionSpec extends Specification {
     }
   }
 
-  "app error" >> {
-    "should return an app error" >> {
+  "RpcController" >> {
+    "should send text response when the an application text failure raise" >> {
       lazy val routeConfiguration = MyRouteConfigurationFactory.routeConfiguration_com_thoughtworks_microbuilder_play_MyRpc()
 
       val rpcEntry = new RpcEntry(routeConfiguration, MyIncomingProxyFactory.incomingProxy_com_thoughtworks_microbuilder_play_MyRpc(new MyRpc {
@@ -73,10 +71,8 @@ class MainControllerExceptionSpec extends Specification {
       contentAsString(result) must equalTo("app exception")
       status(result) must equalTo(INSUFFICIENT_STORAGE)
     }
-  }
 
-  "app error" >> {
-    "should return an app error" >> {
+    "should send JSON response when the an application structural failure raise" >> {
       lazy val routeConfiguration = MyRouteConfigurationFactory.routeConfiguration_com_thoughtworks_microbuilder_play_MyRpcWithStructuralException()
 
       val rpcEntry = new RpcEntry(routeConfiguration, MyIncomingProxyFactory.incomingProxy_com_thoughtworks_microbuilder_play_MyRpcWithStructuralException(new MyRpcWithStructuralException {
