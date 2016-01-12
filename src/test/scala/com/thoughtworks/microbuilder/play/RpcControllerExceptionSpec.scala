@@ -1,14 +1,14 @@
 package com.thoughtworks.microbuilder.play
 
 import com.thoughtworks.microbuilder.play.Implicits.scalaFutureToJsonStreamFuture
-import com.thoughtworks.microbuilder.play.exception.MicrobuilderException.{NativeException, StructuralApplicationException, TextApplicationException}
+import com.thoughtworks.microbuilder.play.exception.MicrobuilderException.{WrongResponseFormatException, NativeException, StructuralApplicationException, TextApplicationException}
 import jsonStream.rpc.IFuture1
 import org.specs2.mutable._
 import play.api.libs.json.JsObject
 import play.api.libs.json.JsString
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration._
 
 import scala.concurrent.{Await, Future}
 
@@ -95,7 +95,7 @@ class RpcControllerExceptionSpec extends Specification {
       status(result) must equalTo(INSUFFICIENT_STORAGE)
     }
 
-    "should throw native exception when RPC implementation throws other exceptions" >> {
+    "should throw a NativeException when RPC implementation throws other exceptions" >> {
       lazy val routeConfiguration = MyRouteConfigurationFactory.routeConfiguration_com_thoughtworks_microbuilder_play_MyRpcWithStructuralException()
 
       val rpcEntry = new RpcEntry(routeConfiguration, MyIncomingProxyFactory.incomingProxy_com_thoughtworks_microbuilder_play_MyRpcWithStructuralException(new MyRpcWithStructuralException {
@@ -110,10 +110,55 @@ class RpcControllerExceptionSpec extends Specification {
 
       val result: Future[play.api.mvc.Result] = mainController.rpc("/my-method/12345/name/test").apply(FakeRequest())
 
-      Await.result(result, Duration.Inf) must throwA[NativeException].like {
+      Await.result(result, 1.seconds) must throwA[NativeException].like {
         case e =>
           e.getMessage must equalTo("my exception message")
       }
+    }
+
+    "should throw a WrongResponseFormatException when RPC implementation throws a TextApplicationException if failureClassName is not omitted" >> {
+      lazy val routeConfiguration = MyRouteConfigurationFactory.routeConfiguration_com_thoughtworks_microbuilder_play_MyRpcWithStructuralException()
+
+      val rpcEntry = new RpcEntry(routeConfiguration, MyIncomingProxyFactory.incomingProxy_com_thoughtworks_microbuilder_play_MyRpcWithStructuralException(new MyRpcWithStructuralException {
+        override def myMethod(id: Int, name: String): IFuture1[MyResponse] = {
+          Future.failed(new TextApplicationException("app exception", INSUFFICIENT_STORAGE))
+        }
+      }))
+
+      val rpcEntrySeq = Seq(rpcEntry)
+
+      val mainController = new RpcController(rpcEntrySeq)
+
+      val result: Future[play.api.mvc.Result] = mainController.rpc("/my-method/12345/name/test").apply(FakeRequest())
+
+      Await.result(result, 1.seconds) must throwA[WrongResponseFormatException]
+    }
+
+    "should throw a WrongResponseFormatException when RPC implementation throws a StructuralApplicationException if failureClassName is omitted" >> {
+      lazy val routeConfiguration = MyRouteConfigurationFactory.routeConfiguration_com_thoughtworks_microbuilder_play_MyRpc()
+
+      val rpcEntry = new RpcEntry(routeConfiguration, MyIncomingProxyFactory.incomingProxy_com_thoughtworks_microbuilder_play_MyRpc(new MyRpc {
+
+        override def myMethod(id: Int, name: String): IFuture1[MyResponse] = {
+          val failure = new GeneralFailure()
+          failure.errorMsg = "my error message"
+          Future.failed(new StructuralApplicationException(failure, INSUFFICIENT_STORAGE))
+        }
+
+        override def createResource(resourceName: String, body: Book): IFuture1[CreatedResponse] = {
+          val createdResponse = new CreatedResponse
+          createdResponse.result = """{"result": "created"}"""
+          Future.successful(createdResponse)
+        }
+      }))
+
+      val rpcEntrySeq = Seq(rpcEntry)
+
+      val mainController = new RpcController(rpcEntrySeq)
+
+      val result: Future[play.api.mvc.Result] = mainController.rpc("/my-method/12345/name/test").apply(FakeRequest())
+
+      Await.result(result, 1.seconds) must throwA[WrongResponseFormatException]
     }
 
 

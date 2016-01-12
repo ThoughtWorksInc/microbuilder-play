@@ -12,6 +12,6 @@ object MicrobuilderException {
 
   final case class NativeException(reason: String) extends Exception(reason) with MicrobuilderException
 
-  final case class WrongResponseFormatException(reason: String) extends Exception with MicrobuilderException
+  final case class WrongResponseFormatException(reason: String) extends Exception(reason) with MicrobuilderException
 
 }

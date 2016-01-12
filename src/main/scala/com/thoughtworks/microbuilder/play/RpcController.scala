@@ -3,7 +3,7 @@ package com.thoughtworks.microbuilder.play
 import java.io.ByteArrayOutputStream
 
 import com.thoughtworks.microbuilder.core.{IRouteConfiguration, MatchResult}
-import com.thoughtworks.microbuilder.play.exception.MicrobuilderException.NativeException
+import com.thoughtworks.microbuilder.play.exception.MicrobuilderException.{WrongResponseFormatException, NativeException}
 import haxe.io.Output
 import haxe.lang.HaxeException
 import jsonStream.io.PrettyTextPrinter
@@ -14,6 +14,7 @@ import play.api.mvc._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, Promise}
+import scala.util.Try
 
 case class RpcEntry(routeConfiguration: IRouteConfiguration, incomingServiceProxy: IJsonService)
 
@@ -71,27 +72,36 @@ class RpcController(rpcEntries: Seq[RpcEntry]) extends Controller {
                     case JsonStreamExtractor.Object(failurePairs) =>
                       if (failurePairs.hasNext) {
                         val failurePair = failurePairs.next()
+                        val expectedFailure = rpcEntry.routeConfiguration.get_failureClassName
                         failurePair.key match {
                           case "TEXT_APPLICATION_FAILURE" =>
-                            promise.success(textFailureResult(failurePair.value))
+                            if (expectedFailure == null) {
+                              promise.success(textFailureResult(failurePair.value))
+                            } else {
+                              promise.failure(new WrongResponseFormatException(s"Expect a $expectedFailure, actually TEXT_APPLICATION_FAILURE(${PrettyTextPrinter.toString(failurePair.value)})"))
+                            }
                           case "STRUCTURAL_APPLICATION_FAILURE" =>
-                            promise.success(structuralFailureResult(Option(matchResult.routeEntry.get_responseContentType), rpcEntry.routeConfiguration.get_failureClassName, failurePair.value))
+                            if (expectedFailure != null) {
+                              promise.complete(Try(structuralFailureResult(Option(matchResult.routeEntry.get_responseContentType), rpcEntry.routeConfiguration.get_failureClassName, failurePair.value)))
+                            } else {
+                              promise.failure(new WrongResponseFormatException(s"Expect text, actually STRUCTURAL_APPLICATION_FAILURE(${PrettyTextPrinter.toString(failurePair.value)})"))
+                            }
                           case "NATIVE_FAILURE" =>
                             promise.failure(nativeFailureException(failurePair.value))
                           case _ =>
-                            throw new IllegalStateException("failure must contain one key/value pair.")
+                            promise.failure( new IllegalStateException("failure must be a Failure."))
                         }
                       } else {
-                        throw new IllegalStateException("failure must contain one key/value pair.")
+                        promise.failure(new IllegalStateException("failure must contain one key/value pair."))
                       }
                     case _ =>
-                      throw new IllegalStateException("failure must contain one key/value pair.")
+                      promise.failure( new IllegalStateException("failure must be a JSON object."))
                   }
                 } else {
-                  throw new IllegalStateException("failure must contain one key/value pair.")
+                  promise.failure( new IllegalStateException("failure must contain one key/value pair."))
                 }
                 if (pairs.hasNext) {
-                  throw new IllegalStateException("failure must contain only one key/value pair.")
+                  promise.failure( new IllegalStateException("failure must contain only one key/value pair."))
                 }
             }
           }
