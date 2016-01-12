@@ -1,15 +1,16 @@
 package com.thoughtworks.microbuilder.play
 
 import com.thoughtworks.microbuilder.play.Implicits.scalaFutureToJsonStreamFuture
-import com.thoughtworks.microbuilder.play.exception.MicrobuilderException.{StructuralApplicationException, TextApplicationException}
+import com.thoughtworks.microbuilder.play.exception.MicrobuilderException.{NativeException, StructuralApplicationException, TextApplicationException}
 import jsonStream.rpc.IFuture1
 import org.specs2.mutable._
 import play.api.libs.json.JsObject
 import play.api.libs.json.JsString
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import scala.concurrent.duration.Duration
 
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
 
 
 class MainControllerExceptionSpec extends Specification {
@@ -46,7 +47,8 @@ class MainControllerExceptionSpec extends Specification {
   }
 
   "RpcController" >> {
-    "should send text response when the an application text failure raise" >> {
+
+    "should send text response when RPC implementation throws a TextApplicationException" >> {
       lazy val routeConfiguration = MyRouteConfigurationFactory.routeConfiguration_com_thoughtworks_microbuilder_play_MyRpc()
 
       val rpcEntry = new RpcEntry(routeConfiguration, MyIncomingProxyFactory.incomingProxy_com_thoughtworks_microbuilder_play_MyRpc(new MyRpc {
@@ -72,7 +74,7 @@ class MainControllerExceptionSpec extends Specification {
       status(result) must equalTo(INSUFFICIENT_STORAGE)
     }
 
-    "should send JSON response when the an application structural failure raise" >> {
+    "should send JSON response when RPC implementation throws a StructuralApplicationException" >> {
       lazy val routeConfiguration = MyRouteConfigurationFactory.routeConfiguration_com_thoughtworks_microbuilder_play_MyRpcWithStructuralException()
 
       val rpcEntry = new RpcEntry(routeConfiguration, MyIncomingProxyFactory.incomingProxy_com_thoughtworks_microbuilder_play_MyRpcWithStructuralException(new MyRpcWithStructuralException {
@@ -92,5 +94,28 @@ class MainControllerExceptionSpec extends Specification {
       contentAsJson(result) must equalTo(JsObject(Map("errorMsg" -> JsString("my error message"))))
       status(result) must equalTo(INSUFFICIENT_STORAGE)
     }
+
+    "should throw native exception when RPC implementation throws other exceptions" >> {
+      lazy val routeConfiguration = MyRouteConfigurationFactory.routeConfiguration_com_thoughtworks_microbuilder_play_MyRpcWithStructuralException()
+
+      val rpcEntry = new RpcEntry(routeConfiguration, MyIncomingProxyFactory.incomingProxy_com_thoughtworks_microbuilder_play_MyRpcWithStructuralException(new MyRpcWithStructuralException {
+        override def myMethod(id: Int, name: String): IFuture1[MyResponse] = {
+          Future.failed(new Exception("my exception message"))
+        }
+      }))
+
+      val rpcEntrySeq = Seq(rpcEntry)
+
+      val mainController = new RpcController(rpcEntrySeq)
+
+      val result: Future[play.api.mvc.Result] = mainController.rpc("/my-method/12345/name/test").apply(FakeRequest())
+
+      Await.result(result, Duration.Inf) must throwA[NativeException].like {
+        case e =>
+          e.getMessage must equalTo("my exception message")
+      }
+    }
+
+
   }
 }

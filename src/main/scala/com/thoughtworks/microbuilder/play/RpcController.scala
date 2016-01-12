@@ -3,6 +3,7 @@ package com.thoughtworks.microbuilder.play
 import java.io.ByteArrayOutputStream
 
 import com.thoughtworks.microbuilder.core.{IRouteConfiguration, MatchResult}
+import com.thoughtworks.microbuilder.play.exception.MicrobuilderException.NativeException
 import haxe.io.Output
 import haxe.lang.HaxeException
 import jsonStream.io.PrettyTextPrinter
@@ -67,14 +68,16 @@ class RpcController(rpcEntries: Seq[RpcEntry]) extends Controller {
                   val pair = pairs.next()
 
                   pair.value match {
-                    case JsonStreamExtractor.Object(appErrorInfoPair) =>
-                      if (appErrorInfoPair.hasNext) {
-                        val appErrorInfo = appErrorInfoPair.next()
-                        appErrorInfo.key match {
+                    case JsonStreamExtractor.Object(failurePairs) =>
+                      if (failurePairs.hasNext) {
+                        val failurePair = failurePairs.next()
+                        failurePair.key match {
                           case "TEXT_APPLICATION_FAILURE" =>
-                            promise.success(textFailureResult(appErrorInfo.value))
+                            promise.success(textFailureResult(failurePair.value))
                           case "STRUCTURAL_APPLICATION_FAILURE" =>
-                            promise.success(structuralFailureResult(Option(matchResult.routeEntry.get_responseContentType), rpcEntry.routeConfiguration.get_failureClassName, appErrorInfo.value))
+                            promise.success(structuralFailureResult(Option(matchResult.routeEntry.get_responseContentType), rpcEntry.routeConfiguration.get_failureClassName, failurePair.value))
+                          case "NATIVE_FAILURE" =>
+                            promise.failure(nativeFailureException(failurePair.value))
                           case _ =>
                             throw new IllegalStateException("failure must contain one key/value pair.")
                         }
@@ -120,6 +123,23 @@ class RpcController(rpcEntries: Seq[RpcEntry]) extends Controller {
     }
   }
 
+  private def nativeFailureException(nativeFailureStream: JsonStream): NativeException = {
+    nativeFailureStream match {
+      case JsonStreamExtractor.Object(subPairs) =>
+        var messageOption: Option[String] = None
+        for (subPair <- subPairs) {
+          subPair.key match {
+            case "message" =>
+              subPair.value match {
+                case JsonStreamExtractor.String(messageValue) =>
+                  messageOption = Some(messageValue)
+              }
+          }
+        }
+        val Some(message) = messageOption
+        new NativeException(message)
+    }
+  }
 
   private def textFailureResult(textApplicationFailureStream: JsonStream): Result = {
     textApplicationFailureStream match {

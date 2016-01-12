@@ -54,12 +54,14 @@ object Implicits {
         future.onComplete {
           case Failure(e) => {
             e match {
-              // TODO: NativeException
               case StructuralApplicationException(data, status) => {
                 handler.onFailure(MicrobuilderFailure.STRUCTURAL_APPLICATION_FAILURE(data, status))
               }
               case TextApplicationException(reason, status) => {
                 handler.onFailure(MicrobuilderFailure.TEXT_APPLICATION_FAILURE(reason, status))
+              }
+              case e: Exception => {
+                handler.onFailure(MicrobuilderFailure.NATIVE_FAILURE(e.getMessage))
               }
             }
           }
