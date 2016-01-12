@@ -15,6 +15,7 @@ object Implicits {
   private val TextApplicationFailureIndex: Int = FailureConstructors.indexOf("TEXT_APPLICATION_FAILURE", 0)
   private val StructuralApplicationFailureIndex: Int = FailureConstructors.indexOf("STRUCTURAL_APPLICATION_FAILURE", 0)
   private val SerializationFailureIndex: Int = FailureConstructors.indexOf("SERIALIZATION_FAILURE", 0)
+  private val NativeFailureIndex: Int = FailureConstructors.indexOf("NATIVE_FAILURE", 0)
 
 
   implicit def jsonStreamFutureToScalaFuture[Value](jsonStreamFuture: IFuture1[Value]): Future[Value] = {
@@ -26,6 +27,10 @@ object Implicits {
       override def onFailure(obj: scala.Any): Unit = {
         val failure = obj.asInstanceOf[MicrobuilderFailure]
         haxe.root.Type.enumIndex(obj) match {
+          case NativeFailureIndex =>
+            p failure new NativeException(
+              haxe.root.Type.enumParameters(failure).__get(0).asInstanceOf[String]
+            )
           case TextApplicationFailureIndex =>
             p failure new TextApplicationException(
               haxe.root.Type.enumParameters(failure).__get(0).asInstanceOf[String],
