@@ -8,7 +8,7 @@ import play.api.test.Helpers._
 
 import scala.concurrent.Future
 
-class MainControllerSpec extends Specification {
+class RpcControllerSpec extends Specification {
 
   "call myMethod(10, test) " >> {
     "should get the myInnerEntity" >> {

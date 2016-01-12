@@ -13,7 +13,7 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 
 
-class MainControllerExceptionSpec extends Specification {
+class RpcControllerExceptionSpec extends Specification {
 
   "the parameter type didn't matched" >> {
     "should return an error" >> {
