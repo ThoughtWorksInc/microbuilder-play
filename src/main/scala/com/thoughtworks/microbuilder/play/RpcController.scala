@@ -116,7 +116,7 @@ class RpcController(rpcEntries: Seq[RpcEntry]) extends Controller {
               }, jsonStream, 0)
 
               javaStream.toByteArray
-            }, Some("application/JsonStream"))))
+            }, Option(matchResult.routeEntry.get_responseContentType))))
           }
         }
         rpcEntry.incomingServiceProxy.apply(matchResult.rpcData, resp)
