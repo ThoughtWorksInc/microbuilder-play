@@ -7,7 +7,7 @@ import jsonStream.rpc.{IJsonResponseHandler, IJsonService}
 import jsonStream.{JsonStream, JsonStreamPair}
 import com.thoughtworks.microbuilder.core.{CoreSerializer, Failure => MicrobuilderFailure, IRouteConfiguration, IRouteEntry}
 import haxe.io.Output
-import play.api.http.Writeable
+import play.api.http.{HeaderNames, Writeable}
 import play.api.libs.ws.{WSAPI, WSRequest}
 
 import scala.concurrent.ExecutionContext
@@ -40,7 +40,12 @@ class PlayOutgoingJsonService(urlPrefix: String,
         request
       }
     }
-    wsRequest.withHeaders(additionalRequestHeaders: _*)
+    val headers = if (template.get_responseContentType == null) {
+      additionalRequestHeaders
+    } else {
+      (HeaderNames.ACCEPT -> template.get_requestContentType) +: additionalRequestHeaders
+    }
+    wsRequest.withHeaders(headers: _*)
   }
 
   def withSerializationExceptionHandling(responseHandler: IJsonResponseHandler, body: String)(func: () => Unit): Unit = {
