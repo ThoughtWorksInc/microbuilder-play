@@ -13,7 +13,10 @@ import play.api.libs.ws.{WSAPI, WSRequest}
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
-class PlayOutgoingJsonService(urlPrefix: String, routes: IRouteConfiguration, wsAPI: WSAPI)(implicit executionContext: ExecutionContext) extends IJsonService {
+class PlayOutgoingJsonService(urlPrefix: String,
+                              routes: IRouteConfiguration,
+                              wsAPI: WSAPI, additionalRequestHeaders: (String, String)*)
+                             (implicit executionContext: ExecutionContext) extends IJsonService {
 
   def prepareWSRequest(parameters: WrappedHaxeIterator[JsonStream], pair: JsonStreamPair): WSRequest = {
     val template: IRouteEntry = routes.nameToUriTemplate(pair.key)
@@ -22,8 +25,7 @@ class PlayOutgoingJsonService(urlPrefix: String, routes: IRouteConfiguration, ws
       if (parameters.hasNext) {
         val next: JsonStream = parameters.next()
         request.withBody(next)(new Writeable[JsonStream](
-        {
-          body =>
+          { body =>
             val javaStream = new ByteArrayOutputStream()
             PrettyTextPrinter.print(new Output {
               override def writeByte(b: Int) = {
@@ -31,13 +33,14 @@ class PlayOutgoingJsonService(urlPrefix: String, routes: IRouteConfiguration, ws
               }
             }, body, 0)
             javaStream.toByteArray
-        },
-        Some("application/json")))
+          },
+          Option(template.get_requestContentType))
+        )
       } else {
         request
       }
     }
-    wsRequest
+    wsRequest.withHeaders(additionalRequestHeaders: _*)
   }
 
   def withSerializationExceptionHandling(responseHandler: IJsonResponseHandler, body: String)(func: () => Unit): Unit = {
