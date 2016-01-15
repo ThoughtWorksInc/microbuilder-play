@@ -11,6 +11,7 @@ import jsonStream.rpc.{IJsonResponseHandler, IJsonService}
 import jsonStream.{JsonStream, JsonStreamPair}
 import play.api.http.Writeable
 import play.api.mvc._
+import play.api.http.HeaderNames;
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, Promise}
@@ -29,7 +30,18 @@ class RpcController(rpcEntries: Seq[RpcEntry]) extends Controller {
 
     val matchedEntries = for {
       rpcEntry <- rpcEntries.iterator
-      matchResult = rpcEntry.routeConfiguration.matchUri(request.method, uri, bodyJsonStream.getOrElse(null), request.contentType.getOrElse(null))
+      matchResult = rpcEntry.routeConfiguration.matchUri(
+        new com.thoughtworks.microbuilder.core.Request(
+          request.method,
+          uri,
+          (for {
+            header <- request.headers.headers
+          } yield new com.thoughtworks.microbuilder.core.Header(header._1, header._2))(collection.breakOut(Array.canBuildFrom)),
+          bodyJsonStream.getOrElse(null),
+          request.contentType.getOrElse(null),
+          request.headers.get(HeaderNames.ACCEPT).getOrElse(null)
+        )
+      );
       if (matchResult != null)
     } yield (rpcEntry, matchResult)
 

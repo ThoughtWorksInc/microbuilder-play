@@ -20,7 +20,8 @@ class PlayOutgoingJsonService(urlPrefix: String,
 
   def prepareWSRequest(parameters: WrappedHaxeIterator[JsonStream], pair: JsonStreamPair): WSRequest = {
     val template: IRouteEntry = routes.nameToUriTemplate(pair.key)
-    val request = wsAPI.url(urlPrefix + template.render(parameters.haxeIterator)).withMethod(template.get_method())
+    val requestData = template.render(parameters.haxeIterator)
+    val request = wsAPI.url(raw"""$urlPrefix${requestData.uri}""").withMethod(requestData.httpMethod)
     val wsRequest = {
       if (parameters.hasNext) {
         val next: JsonStream = parameters.next()
@@ -34,7 +35,7 @@ class PlayOutgoingJsonService(urlPrefix: String,
             }, body, 0)
             javaStream.toByteArray
           },
-          Option(template.get_requestContentType))
+          Option(requestData.contentType))
         )
       } else {
         request
@@ -43,7 +44,7 @@ class PlayOutgoingJsonService(urlPrefix: String,
     val headers = if (template.get_responseContentType == null) {
       additionalRequestHeaders
     } else {
-      (HeaderNames.ACCEPT -> template.get_requestContentType) +: additionalRequestHeaders
+      (HeaderNames.ACCEPT -> requestData.contentType) +: additionalRequestHeaders
     }
     wsRequest.withHeaders(headers: _*)
   }
