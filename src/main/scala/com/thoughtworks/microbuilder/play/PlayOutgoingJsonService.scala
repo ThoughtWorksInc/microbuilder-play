@@ -117,7 +117,28 @@ class PlayOutgoingJsonService(urlPrefix: String, routes: IRouteConfiguration, ws
     }
   }
 
-  def push(x$1: jsonStream.JsonStream): Unit = {
+  def push(requestParameters: jsonStream.JsonStream): Unit = {
+    requestParameters match {
+      case JsonStreamExtractor.Object(pairs) =>
+        val pair = pairs.next()
+        pair.value match {
+          case JsonStreamExtractor.Array(parameters) =>
+            val wsRequest: WSRequest = prepareWSRequest(parameters, pair)
+            handleResponse(wsRequest, PlayOutgoingJsonService.DummyJsonResponseHandler)
+        }
+      case _ =>
+        throw new IllegalArgumentException("parameter should be an array")
+    }
+  }
+
+}
+
+private object PlayOutgoingJsonService {
+
+  object DummyJsonResponseHandler extends IJsonResponseHandler {
+    override def onSuccess(stream: JsonStream): Unit = {}
+
+    override def onFailure(stream: JsonStream): Unit = {}
   }
 
 }
