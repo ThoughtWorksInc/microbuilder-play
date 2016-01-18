@@ -23,6 +23,7 @@ case class RpcEntry(routeConfiguration: IRouteConfiguration, incomingServiceProx
 class RpcController(rpcEntries: Seq[RpcEntry]) extends Controller {
 
   def rpc(uri: String) = Action.async { request =>
+
     val bodyJsonStream: Option[JsonStream] = request.body.asText match {
       case None => None
       case Some(jsonStream) => Some(JsonStream.STRING(jsonStream))
@@ -33,10 +34,15 @@ class RpcController(rpcEntries: Seq[RpcEntry]) extends Controller {
       matchResult = rpcEntry.routeConfiguration.matchUri(
         new com.thoughtworks.microbuilder.core.Request(
           request.method,
-          uri,
+          raw"""$uri${
+            request.uri.indexOf('?') match {
+              case -1 => ""
+              case i => request.uri.substring(i)
+            }
+          }""",
           (for {
             header <- request.headers.headers
-          } yield new com.thoughtworks.microbuilder.core.Header(header._1, header._2))(collection.breakOut(Array.canBuildFrom)),
+          } yield new com.thoughtworks.microbuilder.core.Header(header._1, header._2)) (collection.breakOut(Array.canBuildFrom)),
           bodyJsonStream.getOrElse(null),
           request.contentType.getOrElse(null),
           request.headers.get(HeaderNames.ACCEPT).getOrElse(null)
@@ -101,19 +107,19 @@ class RpcController(rpcEntries: Seq[RpcEntry]) extends Controller {
                           case "NATIVE_FAILURE" =>
                             promise.failure(nativeFailureException(failurePair.value))
                           case _ =>
-                            promise.failure( new IllegalStateException("failure must be a Failure."))
+                            promise.failure(new IllegalStateException("failure must be a Failure."))
                         }
                       } else {
                         promise.failure(new IllegalStateException("failure must contain one key/value pair."))
                       }
                     case _ =>
-                      promise.failure( new IllegalStateException("failure must be a JSON object."))
+                      promise.failure(new IllegalStateException("failure must be a JSON object."))
                   }
                 } else {
-                  promise.failure( new IllegalStateException("failure must contain one key/value pair."))
+                  promise.failure(new IllegalStateException("failure must contain one key/value pair."))
                 }
                 if (pairs.hasNext) {
-                  promise.failure( new IllegalStateException("failure must contain only one key/value pair."))
+                  promise.failure(new IllegalStateException("failure must contain only one key/value pair."))
                 }
             }
           }
