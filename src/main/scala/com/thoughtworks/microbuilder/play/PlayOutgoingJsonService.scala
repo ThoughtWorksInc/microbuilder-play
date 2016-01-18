@@ -41,10 +41,14 @@ class PlayOutgoingJsonService(urlPrefix: String,
         request
       }
     }
+    val requestDataHeaders = for {
+      header <- requestData.headers
+    } yield header.name -> Option(header.value).getOrElse("")
+
     val headers = if (template.get_responseContentType == null) {
-      additionalRequestHeaders
+      requestDataHeaders ++ additionalRequestHeaders
     } else {
-      (HeaderNames.ACCEPT -> requestData.contentType) +: additionalRequestHeaders
+      ((HeaderNames.ACCEPT -> requestData.contentType) +: requestDataHeaders) ++ additionalRequestHeaders
     }
     wsRequest.withHeaders(headers: _*)
   }
