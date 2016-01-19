@@ -10,7 +10,7 @@ object MicrobuilderException {
 
   final case class TextApplicationException(reason: String, status: Int) extends Exception(reason) with ApplicationException
 
-  final case class NativeException(@deprecatedName('reason) message: String) extends Exception(message) with MicrobuilderException
+  final case class NativeException(@deprecatedName('reason) message: String = null) extends Exception(message) with MicrobuilderException
 
   final case class WrongResponseFormatException(reason: String) extends Exception(reason) with MicrobuilderException
 

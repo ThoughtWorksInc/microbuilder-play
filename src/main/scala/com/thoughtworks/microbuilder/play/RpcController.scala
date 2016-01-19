@@ -164,8 +164,7 @@ class RpcController(rpcEntries: Seq[RpcEntry]) extends Controller {
               }
           }
         }
-        val Some(message) = messageOption
-        new NativeException(message)
+        new NativeException(messageOption.getOrElse(null))
     }
   }
 

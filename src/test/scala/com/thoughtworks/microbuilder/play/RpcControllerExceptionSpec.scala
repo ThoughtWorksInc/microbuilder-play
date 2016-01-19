@@ -112,7 +112,7 @@ class RpcControllerExceptionSpec extends Specification {
 
       Await.result(result, 1.seconds) must throwA[NativeException].like {
         case e =>
-          e.getMessage must equalTo("my exception message")
+          e.getMessage must contain("my exception message")
       }
     }
 

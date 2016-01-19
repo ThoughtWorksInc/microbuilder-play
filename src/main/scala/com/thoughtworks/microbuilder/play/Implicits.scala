@@ -66,7 +66,7 @@ object Implicits {
                 handler.onFailure(MicrobuilderFailure.TEXT_APPLICATION_FAILURE(reason, status))
               }
               case e: Exception => {
-                handler.onFailure(MicrobuilderFailure.NATIVE_FAILURE(e.getMessage))
+                handler.onFailure(MicrobuilderFailure.NATIVE_FAILURE(e.toString))
               }
             }
           }
