@@ -17,8 +17,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, Promise}
 import scala.util.Try
 
-case class RpcEntry(routeConfiguration: IRouteConfiguration, incomingServiceProxy: IJsonService)
-
 
 class RpcController(rpcEntries: Seq[RpcEntry]) extends Controller {
 
