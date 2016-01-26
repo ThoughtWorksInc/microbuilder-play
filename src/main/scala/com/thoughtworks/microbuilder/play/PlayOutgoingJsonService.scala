@@ -13,10 +13,12 @@ import play.api.libs.ws.{WSAPI, WSRequest}
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
+
 class PlayOutgoingJsonService(urlPrefix: String,
                               routes: IRouteConfiguration,
                               wsAPI: WSAPI, additionalRequestHeaders: (String, String)*)
                              (implicit executionContext: ExecutionContext) extends IJsonService {
+
 
   def prepareWSRequest(parameters: WrappedHaxeIterator[JsonStream], pair: JsonStreamPair): WSRequest = {
     val template: IRouteEntry = routes.nameToUriTemplate(pair.key)
@@ -146,9 +148,18 @@ class PlayOutgoingJsonService(urlPrefix: String,
 
 }
 
-private object PlayOutgoingJsonService {
+object PlayOutgoingJsonService {
 
-  object DummyJsonResponseHandler extends IJsonResponseHandler {
+  def newProxy[Service](urlPrefix: String,
+                        wsAPI: WSAPI, additionalRequestHeaders: (String, String)*)
+                       (implicit outgoingStub: OutgoingStub[Service],
+                        executionContext: ExecutionContext) = {
+    outgoingStub.outgoingServiceProxy(
+      new PlayOutgoingJsonService(urlPrefix, outgoingStub.routeConfiguration, wsAPI, additionalRequestHeaders: _*)
+    )
+  }
+
+  private[PlayOutgoingJsonService] object DummyJsonResponseHandler extends IJsonResponseHandler {
     override def onSuccess(stream: JsonStream): Unit = {}
 
     override def onFailure(stream: JsonStream): Unit = {}
