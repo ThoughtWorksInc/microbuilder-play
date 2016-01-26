@@ -9,18 +9,32 @@ import haxe.lang.HaxeException
 import jsonStream.io.PrettyTextPrinter
 import jsonStream.rpc.{IJsonResponseHandler, IJsonService}
 import jsonStream.{JsonStream, JsonStreamPair}
+import org.slf4j.LoggerFactory
 import play.api.http.Writeable
 import play.api.mvc._
-import play.api.http.HeaderNames;
+import play.api.http.HeaderNames
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, Promise}
 import scala.util.Try
 
+private object RpcController {
+  private val logger = LoggerFactory.getLogger(classOf[RpcController])
+}
 
 class RpcController(rpcEntries: Seq[RpcEntry]) extends Controller {
 
+  import RpcController._
+
   def rpc(uri: String) = Action.async { request =>
+    val uriWithQuery =
+      raw"""$uri${
+        request.uri.indexOf('?') match {
+          case -1 => ""
+          case i => request.uri.substring(i)
+        }
+      }"""
+    logger.debug(raw"""Parsing URI $uriWithQuery...""")
 
     val bodyJsonStream: Option[JsonStream] = request.body.asText match {
       case None => None
@@ -32,12 +46,7 @@ class RpcController(rpcEntries: Seq[RpcEntry]) extends Controller {
       matchResult = rpcEntry.routeConfiguration.matchUri(
         new com.thoughtworks.microbuilder.core.Request(
           request.method,
-          raw"""$uri${
-            request.uri.indexOf('?') match {
-              case -1 => ""
-              case i => request.uri.substring(i)
-            }
-          }""",
+          uriWithQuery,
           (for {
             header <- request.headers.headers
           } yield new com.thoughtworks.microbuilder.core.Header(header._1, header._2)) (collection.breakOut(Array.canBuildFrom)),
