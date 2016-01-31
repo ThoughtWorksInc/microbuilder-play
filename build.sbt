@@ -12,9 +12,9 @@ libraryDependencies += "org.specs2" %% "specs2-core" % "3.6.4" % Test
 
 libraryDependencies += "com.typesafe.play" %% "play-ws" % "2.4.2"
 
-libraryDependencies += "com.thoughtworks.microbuilder" % "microbuilder-core" % "1.0.1" % TestHaxeJava classifier "haxe-java"
+libraryDependencies += "com.thoughtworks.microbuilder" % "microbuilder-core" % "2.0.0" % TestHaxeJava classifier "haxe-java"
 
-libraryDependencies += "com.thoughtworks.microbuilder" % "microbuilder-core" % "1.0.1"
+libraryDependencies += "com.thoughtworks.microbuilder" % "microbuilder-core" % "2.0.0"
 
 libraryDependencies += "com.thoughtworks.microbuilder" % "json-stream-core" % "3.0.0" % TestHaxeJava classifier "haxe-java"
 
@@ -118,9 +118,9 @@ licenses += "Apache" -> url("http://www.apache.org/licenses/LICENSE-2.0")
 
 
 for (c <- AllTestTargetConfigurations) yield {
-  haxeMacros in c += """autoParser.AutoParser.BUILDER.defineMacroClass([ "com.thoughtworks.microbuilder.core.UriTemplate" ], "com.thoughtworks.microbuilder.core.UriTemplateParser")"""
+  haxeMacros in c += """autoParser.AutoParser.BUILDER.defineMacroClass([ "com.thoughtworks.microbuilder.core.uriTemplate.UriTemplate" ], "com.thoughtworks.microbuilder.core.UriTemplateParser")"""
 }
 
 for (c <- AllTestTargetConfigurations) yield {
-  haxeMacros in c += """autoParser.AutoFormatter.BUILDER.defineMacroClass([ "com.thoughtworks.microbuilder.core.UriTemplate" ], "com.thoughtworks.microbuilder.core.UriTemplateFormatter")"""
+  haxeMacros in c += """autoParser.AutoFormatter.BUILDER.defineMacroClass([ "com.thoughtworks.microbuilder.core.uriTemplate.UriTemplate" ], "com.thoughtworks.microbuilder.core.UriTemplateFormatter")"""
 }

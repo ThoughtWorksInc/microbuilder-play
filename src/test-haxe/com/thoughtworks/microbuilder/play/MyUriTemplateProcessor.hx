@@ -5,7 +5,7 @@ using jsonStream.Plugins;
 using com.thoughtworks.microbuilder.play.MyDeserializer;
 
 
-//@:build(com.thoughtworks.microbuilder.core.UriTemplateProcessor.generateUriTemplateProcessor([
+//@:build(com.thoughtworks.microbuilder.core.uriTemplate.UriTemplateProcessor.generateUriTemplateProcessor([
 //  "com.thoughtworks.microbuilder.play.MyRpc"
 //]))
 class MyUriTemplateProcessor {
