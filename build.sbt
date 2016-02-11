@@ -12,13 +12,13 @@ libraryDependencies += "org.specs2" %% "specs2-core" % "3.6.4" % Test
 
 libraryDependencies += "com.typesafe.play" %% "play-ws" % "2.4.2"
 
-libraryDependencies += "com.thoughtworks.microbuilder" % "microbuilder-core" % "2.0.1" % TestHaxeJava classifier "haxe-java"
+libraryDependencies += "com.thoughtworks.microbuilder" % "microbuilder-core" % "3.0.1" % TestHaxeJava classifier "haxe-java"
 
-libraryDependencies += "com.thoughtworks.microbuilder" % "microbuilder-core" % "2.0.1"
+libraryDependencies += "com.thoughtworks.microbuilder" % "microbuilder-core" % "3.0.1"
 
-libraryDependencies += "com.thoughtworks.microbuilder" % "json-stream-core" % "3.0.0" % TestHaxeJava classifier "haxe-java"
+libraryDependencies += "com.thoughtworks.microbuilder" % "json-stream-core" % "3.0.2" % TestHaxeJava classifier "haxe-java"
 
-libraryDependencies += "com.thoughtworks.microbuilder" % "json-stream-core" % "3.0.0" % Provided
+libraryDependencies += "com.thoughtworks.microbuilder" % "json-stream-core" % "3.0.2" % Provided
 
 libraryDependencies += "com.qifun" %% "haxe-scala-stm" % "0.1.4" % TestHaxeJava classifier "haxe-java"
 
@@ -99,16 +99,6 @@ scmInfo := Some(ScmInfo(
   Some(s"scm:git:git@github.com:ThoughtWorksInc/${name.value}.git")))
 
 licenses += "Apache" -> url("http://www.apache.org/licenses/LICENSE-2.0")
-
-
-
-for (c <- AllTestTargetConfigurations) yield {
-  haxeMacros in c += """autoParser.AutoParser.BUILDER.defineMacroClass([ "com.thoughtworks.microbuilder.core.uriTemplate.UriTemplate" ], "com.thoughtworks.microbuilder.core.UriTemplateParser")"""
-}
-
-for (c <- AllTestTargetConfigurations) yield {
-  haxeMacros in c += """autoParser.AutoFormatter.BUILDER.defineMacroClass([ "com.thoughtworks.microbuilder.core.uriTemplate.UriTemplate" ], "com.thoughtworks.microbuilder.core.UriTemplateFormatter")"""
-}
 
 releaseProcess := {
   releaseProcess.value.patch(releaseProcess.value.indexOf(pushChanges), Seq[ReleaseStep](releaseStepCommand("sonatypeRelease")), 0)
